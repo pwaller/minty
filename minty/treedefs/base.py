@@ -3,6 +3,8 @@ from pytuple.treeinfo import treeinfo as TI
 from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
 from math import tanh, cosh
 
+from PhotonIDTool import get_photon_robust_tight
+
 import ROOT as R
 
 class VariableSelection(object):
@@ -80,7 +82,7 @@ class EGamma(Particle):
     @property
     def deltaE(self):
         return self.Emax2 - self.Emins1
-    
+        
     isConv  = TI.bool
     
     Ethad   = TI.float(naming(pau="shwr_EtHad"))
@@ -124,6 +126,10 @@ class Photon(EGamma):
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
     
+    @property
+    def robust_tight(self):
+        return get_photon_robust_tight(self)
+        
     @property
     def pass_fiducial(self):
         return (self.cl_pt >= 15000 and 
