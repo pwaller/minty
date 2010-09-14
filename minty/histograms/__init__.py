@@ -42,14 +42,15 @@ def double_bins(bins):
             result.append(this)
         result.append(this + (next-this)/2)
         result.append(next)
-    return tuple(result)
+    return ("var",) + tuple(result)
 
 AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
 
 def make_sparse_hist_filler(hist):
+    dimensions = hist.GetNdimensions()
     def filler(*args, **kwargs):
         w = kwargs.pop("w", 1)
-        assert len(args) == dimensions, "Filling THnSparse with wrong number"
+        assert len(args) == dimensions, "Filling THnSparse with wrong number of arguments"
         hist.Fill(array('d', args), w)
     return filler
 
@@ -57,11 +58,9 @@ class HistogramManager(object):
     def __init__(self):
         self.histo_store = {}
         self.filler_store = {}
-        #self.finalization = []
-
-#    def finalize(self):
-#        for function in self.finalization:
-#            function()
+    
+    def finalize(self):
+        pass
 
     def save(self):
         for histogram in self.histo_store.values():
@@ -77,16 +76,16 @@ class HistogramManager(object):
                                   "(`b=` in HistogramManager.get)")
         binning = kwargs.pop("b")
     
-        dimensions = len(binning) // 3
+        dimensions = len(binning)
         
         if dimensions <= 3:
             TH = {1: R.TH1F, 2: R.TH2F, 3: R.TH3F}[dimensions]
             binning_args, fixup_axes = [], []
             
-            for bins, axis_getter in zip(binning, axes_getters):
+            for bins, axis_getter in zip(binning, AXES_GETTERS):
                 if len(bins) == 3:
                     binning_args.extend(bins)
-                elif bins[0] == "varbins":
+                elif bins[0] == "var":
                     variable_bins = bins[1:]
                     dummy_bins = (len(variable_bins), 
                                   variable_bins[0], 
@@ -96,11 +95,13 @@ class HistogramManager(object):
                 
                 else:
                     raise RuntimeError("A given set of bins should either be "
-                        "three long, or the first element must be 'varbins'")
+                        "three long, or the first element must be 'var' to "
+                        "indicate variable binning")
                     
-            hist = TH(hname_str, htitle, *binning)
+            hist = TH(hname_str, htitle, *binning_args)
             for fixup_axis, binning in fixup_axes:
-                fixup_axis(hist).Set(len(binning), array("d", binning))
+                print "Setting axis:", fixup_axis, binning
+                fixup_axis(hist).Set(len(binning)-1, array("d", binning))
                 
             filler = hist.Fill
         else:        
@@ -129,7 +130,8 @@ class HistogramManager(object):
                                 nbins, xmins, xmaxs)
                                 
             for i, binning in fixup_axes:
-                hist.GetAxis(i).Set(len(binning), array("d", binning))
+                print "Setting axis (Sp):", i, binning
+                hist.GetAxis(i).Set(len(binning)-1, array("d", binning))
             
             filler = make_sparse_hist_filler(hist)
             #values = array('d', [0] * dimensions)

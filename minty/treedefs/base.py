@@ -132,14 +132,14 @@ class Photon(EGamma):
         
     @property
     def pass_fiducial(self):
-        return (self.cl_pt >= 15000 and 
+        return (self.cl.pt >= 15000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37))        
 
 class Electron(EGamma):
     __rootname__ = "el"
 
     # Not yet implemented
-    robust_tight = 0
+    pass_fiducial = robust_tight = 0
 
     loose = TI.float(naming(pau="isElectronLoose"))
     tight = TI.float(naming(pau="isElectronTight"))

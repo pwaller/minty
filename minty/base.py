@@ -26,7 +26,7 @@ class AnalysisBase(object):
     
     def finalize(self):
         self.histogram_manager.finalize()
-        self.tally_manager.finalize()
+        #self.tally_manager.finalize()
         
     def event(self, idx, event):
         event.index = idx

@@ -33,39 +33,51 @@ def counts(ana, event, name, objects):
         
     ev_cuts = event.is_grl, pv, event.EF.g10_loose
     
-    cuts = "loose:tight:fiducial:oq:grl:pv:g10_loose"
-    cut_binning = (2, 0, 2) * len(cuts.split(":"))
+    cuts = "loose:tight:robust_tight:fiducial:oq:grl:pv:g10_loose"
+    cut_binning = ((2, 0, 2),) * len(cuts.split(":"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
                             title="%s counts passing cuts:%s" % (name, cuts))
     
     for o in objects:
-        fill_counts(o.loose, o.tight, o.fiducial, o.good_oq, *ev_cuts)
+        fill_counts(o.loose, o.tight, o.robust_tight, o.pass_fiducial, o.good_oq, 
+                    *ev_cuts)
 
-def plot_pts(ana, name, binning, obj):
+def plot_pts(ana, name, bins, obj):
     """
     Plot Pt histograms
     """
-    ana.h.get(name, "pt",    b=binning)(obj.pt)
-    ana.h.get(name, "pt_cl", b=binning)(obj.cl.pt)
+    ana.h.get(name, "pt",    b=(bins,))(obj.pt)
+    ana.h.get(name, "pt_cl", b=(bins,))(obj.cl.pt)
     
+    ana.h.get(name, "pt_smearmat",    b=(bins, bins))(obj.truth.pt, obj.pt)
+    ana.h.get(name, "pt_cl_smearmat", b=(bins, bins))(obj.truth.pt, obj.cl.pt)
+    
+    return
     if ana.have_truth:
-        ana.h.get(name, "pt_true", b=binning)(obj.truth.pt)
+        ana.h.get(name, "pt_true", b=(bins,))(obj.truth.pt)
         
-        pt_res    = 1/obj.truth.pt - 1/obj.pt
-        pt_cl_res = 1/obj.truth.pt - 1/obj.cl.pt
+        if type(obj).__name__ == "Photon":
+            pt_res    = obj.truth.pt - obj.pt
+            pt_cl_res = obj.truth.pt - obj.cl.pt
+        elif type(obj).__name__ == "Electron":
+            name += ("reciprocal",)
+            pt_res    = 1/obj.truth.pt - 1/obj.pt
+            pt_cl_res = 1/obj.truth.pt - 1/obj.cl.pt
+        else:
+            raise RuntimeError("Unexpected object type")
         
-        ana.h.get(name, "pt_res",    b=ana.ptres_binning)(pt_res)
-        ana.h.get(name, "pt_cl_res", b=ana.ptres_binning)(pt_cl_res)         
+        ana.h.get(name, "pt_res",    b=(ana.ptres_binning,))(pt_res)
+        ana.h.get(name, "pt_cl_res", b=(ana.ptres_binning,))(pt_cl_res)         
 
 def plot_object(ana, event, name, obj):
     """
     Plot histograms for one object (electron, photon)
     """
     
-    plot_pts(ana, name,           ana.ptbins,      ph)
+    plot_pts(ana, name,           ana.ptbins,      obj)
     
     # Once with finer binning
-    plot_pts(ana, (name, "fine"), ana.ptbins_fine, ph)
+    plot_pts(ana, (name, "fine"), ana.ptbins_fine, obj)
     
     # More sets of plots come later
 
@@ -77,12 +89,12 @@ def plots(ana, event):
     # but left it expanded as two loops just to get an idea what it looks like
     
     for ph in event.photons:
-        if not (ph.tight and ph.fiducial): continue
+        if not (ph.tight and ph.pass_fiducial): continue
         plot_object(ana, event, ("photon", "fiducial"), ph)
         
-    for el in event.electron:
-        if not (el.tight and el.fiducial): continue
-        plot_object(ana, event, ("electron", "fiducial"), ph)
+    for el in event.electrons:
+        if not (el.tight and el.pass_fiducial): continue
+        plot_object(ana, event, ("electron", "fiducial"), el)
 
 def make_tight_ph_tree(ana, event):
     """
@@ -129,7 +141,7 @@ class DirectPhotonAnalysis(AnalysisBase):
             mark_object_quality,
             lambda a, e: counts(a, e, "photons", e.photons),
             plots,
-            make_tight_ph_tree,
+            #make_tight_ph_tree,
         ])
 
 def do_more_stuff(ana, event):

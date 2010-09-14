@@ -13,6 +13,7 @@ def test_ev(idx, ev):
     ev.RunNumber, ev.LumiBlock, ev.EventNumber, ev.EF.g10_loose, [v.nTracks for v in ev.vertices]
     
     for obj in ev.photons:
+        #print "Photon: %.3f" % obj.pt, obj.robust_tight, obj.tight
         obj.pt, obj.cl.pt, obj.true.pt, obj.true.matched, obj.loose, obj.tight
         
     for obj in ev.electrons:
