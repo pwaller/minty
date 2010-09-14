@@ -58,8 +58,12 @@ class EGamma(Particle):
     etas2 = TI.float(naming(pau="etaS2"))
     
     @property
-    def Reta(self):
+    def reta(self):
         return self.E237 / self.E277 if self.E277 else 0
+        
+    @property
+    def rphi(self):
+        return self.E233 / self.E237 if self.E237 else 0
     
     @property
     def Rhad(self):
@@ -69,11 +73,31 @@ class EGamma(Particle):
     def Rhad1(self):
         return self.EtHad1 / (self.cl.E / cosh(self.etas2))
     
-    Ethad  = TI.float(naming(pau="shwr_EtHad"))
-    Ethad1 = TI.float(naming(pau="shwr_EtHad1"))
-    E277   = TI.float(naming(pau="shwr_E277"))
-    E237   = TI.float(naming(pau="shwr_E237"))
-            
+    @property
+    def Eratio(self):
+        return (self.emaxs1 - self.Emax2) / (self.emaxs1 + self.Emax2)
+    
+    @property
+    def deltaE(self):
+        return self.Emax2 - self.Emins1
+    
+    isConv  = TI.bool
+    
+    Ethad   = TI.float(naming(pau="shwr_EtHad"))
+    Ethad1  = TI.float(naming(pau="shwr_EtHad1"))
+    E277    = TI.float(naming(pau="shwr_E277"))
+    E237    = TI.float(naming(pau="shwr_E237"))
+    E233    = TI.float(naming(pau="shwr_E233"))
+    
+    Emins1  = TI.float(naming(pau="shwr_Emin")) 
+    emaxs1  = TI.float(naming(pau="shwr_Emax1"))
+    Emax2   = TI.float(naming(pau="shwr_Emax2"))
+    f1      = TI.float(naming(pau="shwr_f1"))
+    fside   = TI.float(naming(pau="shwr_fracm"))
+    weta2   = TI.float(naming(pau="shwr_weta2"))
+    ws3     = TI.float(naming(pau="shwr_w1"))
+    wstot   = TI.float(naming(pau="shwr_wtot"))
+    
     class Cluster(Particle):
         """
         egamma: ph_cl_*
