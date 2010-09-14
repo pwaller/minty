@@ -1,0 +1,115 @@
+from pytuple.readtuple import make_wrapper
+from pytuple.treeinfo import treeinfo as TI
+from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
+from math import tanh, cosh
+
+import ROOT as R
+
+class VariableSelection(object):
+    have_truth = False
+    tuple_type = "eg" # possibilities: "pau"
+        
+class CurrentVS:
+    args = VariableSelection()
+
+def naming(**kwargs):
+    """
+    Rewrite names according to kwargs.
+    """
+    def functor(rootname=None, leafname=None):
+        tuptype = CurrentVS.args.tuple_type
+        varname = kwargs.get(tuptype, leafname)
+        if callable(varname):
+            res = varname(rootname, leafname)
+        elif "{" in varname:
+            res = varname.format(rootname=rootname, leafname="{leafname}")
+        elif rootname:
+            if "{leafname}" in rootname:
+                res = rootname.replace("{leafname}", leafname)
+            else:
+                res = "%s_%s" % (rootname, varname) if rootname else varname
+        else:
+            res = varname
+        #print "Created new ROOT branch name: ", rootname, leafname, res
+        return res
+    return functor
+
+class Global(object):
+    RunNumber = TI.int(naming(pau="Run"))
+    EventNumber = TI.int(naming(pau="Event"))
+    LumiBlock = TI.int(naming(eg="lbn"))
+
+class Particle(Fourvec_PtEtaPhiE):
+    "Defines an object with (pt, eta, phi, E) available)."
+
+class Trigger(object):
+    g10_loose = TI.bool
+
+class Vertex(object):
+    __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
+    
+    nTracks = TI.int(naming(pau="ntracks"))
+    
+class Jet(Fourvec_PtEtaPhiE):
+    pass
+    
+class EGamma(Particle):
+    isEM = TI.float
+    etas2 = TI.float(naming(pau="etaS2"))
+    
+    @property
+    def Reta(self):
+        return self.E237 / self.E277 if self.E277 else 0
+    
+    @property
+    def Rhad(self):
+        return self.EtHad / (self.cl.E / cosh(self.etas2))
+        
+    @property
+    def Rhad1(self):
+        return self.EtHad1 / (self.cl.E / cosh(self.etas2))
+    
+    Ethad  = TI.float(naming(pau="shwr_EtHad"))
+    Ethad1 = TI.float(naming(pau="shwr_EtHad1"))
+    E277   = TI.float(naming(pau="shwr_E277"))
+    E237   = TI.float(naming(pau="shwr_E237"))
+            
+    class Cluster(Particle):
+        """
+        egamma: ph_cl_*
+        pau:    ph_*_clus
+        """
+    cl = TI.instance(Cluster, naming(pau="{rootname}_{leafname}_clus"))
+        
+    class Truth(Particle):
+        """
+        egamma: ph_truth_* => namepat = "%s_truth_"
+        pau:    truth_ph_* => namepat = "truth_%s_"
+        """
+        
+        # matched in pau is called "ph_matchMC"
+        matched = TI.bool(naming(pau=lambda x, y: x.replace("{leafname}_", "match")))
+        
+        naming = staticmethod(naming(eg ="{rootname}_truth_{leafname}",
+                                     pau="{rootname}_{leafname}_MC"))
+    truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
+                    
+class Photon(EGamma):
+    __rootname__ = "ph"
+    
+    loose = TI.float(naming(pau="isPhotonLoose"))
+    tight = TI.float(naming(pau="isPhotonTight"))
+    
+    @property
+    def pass_fiducial(self):
+        return (self.cl_pt >= 15000 and 
+                (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37))        
+
+class Electron(EGamma):
+    __rootname__ = "el"
+
+    # Not yet implemented
+    robust_tight = 0
+
+    loose = TI.float(naming(pau="isElectronLoose"))
+    tight = TI.float(naming(pau="isElectronTight"))

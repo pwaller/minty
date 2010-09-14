@@ -1,0 +1,2 @@
+def TallyManager():
+    pass
