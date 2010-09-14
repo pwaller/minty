@@ -1,6 +1,7 @@
-from minty.utils import GRL, OQMap
+from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
 from minty.metadata import TallyManager
+from minty.treedefs.egamma import egamma_wrap_tree
 
 class DropEvent(Exception):
     pass
@@ -8,9 +9,12 @@ class DropEvent(Exception):
 class AnalysisBase(object):
     def __init__(self, input_tree, options):
         self.options = options
-        self.input_tree = input_tree
+        self.input_tree = egamma_wrap_tree(input_tree)
         
-        self.grl = GRL(options.grl_path)
+        if options.grl_path:
+            self.grl = GRL(options.grl_path)
+        else:
+            self.grl = FakeGRL()
         
         self.histogram_manager = self.h = HistogramManager()
         self.tally_manager = TallyManager()
@@ -33,12 +37,12 @@ class AnalysisBase(object):
             pass
         except:
             rlum = event.RunNumber, event.LumiBlock
-            print "Exception encountered in %r" % rlum
+            print "Exception encountered in %r" % (rlum,)
             raise
         
-    def run():
-         self.input_tree.loop(self.event, hi=hi)
-         self.finalize()
+    def run(self):
+        self.input_tree.loop(self.event, lo=self.options.skip, hi=self.options.limit)
+        self.finalize()
 
 
 

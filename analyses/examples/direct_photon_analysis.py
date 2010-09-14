@@ -7,6 +7,7 @@
 import os; import sys; sys.path.insert(0, os.getcwd())
 
 from minty import main, AnalysisBase
+from minty.histograms import double_bins, mirror_bins
 
 from math import cosh
 
@@ -97,18 +98,20 @@ def make_tight_ph_tree(ana, event):
         new_tree.photon.new(ph)
         
     new_tree.Fill()
-        
+
 class DirectPhotonAnalysis(AnalysisBase):
     def __init__(self, tree, options):
     
+        """
         # Additional information to decorate default objects with
         from minty.treedefs import Photon, Electron
         self.tree_extras = {
             Photon   : ExtraEgammaInfo,
             Electron : ExtraEgammaInfo,
         }
+        """
     
-        super(PhotonAnalysis, self).__init__(tree, options)
+        super(DirectPhotonAnalysis, self).__init__(tree, options)
         
         self.ptbins = ("var", 15, 20, 25, 30, 35, 40, 50, 60, 100)
         self.etabins = mirror_bins(("var", 0., 0.60, 1.37, 1.52, 1.81, 2.37))
@@ -124,7 +127,7 @@ class DirectPhotonAnalysis(AnalysisBase):
         self.tasks.extend([
             mark_is_grl,
             mark_object_quality,
-            lambda a, e: counts(a, e, "photons", event.photons),
+            lambda a, e: counts(a, e, "photons", e.photons),
             plots,
             make_tight_ph_tree,
         ])
@@ -145,3 +148,5 @@ class DirectPhotonAnalysisExtension(DirectPhotonAnalysis):
 
 if __name__ == "__main__":
     main(DirectPhotonAnalysis)
+    
+    
