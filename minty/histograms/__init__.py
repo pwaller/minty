@@ -53,6 +53,24 @@ def scale_bins(bins, factor):
     def scale(n): return n * factor
     return ("var",) + tuple(map(scale, bins))
 
+def histaxes_mev_to_gev(orig_hist):
+    """
+    If an axis contains "[MeV]" in its title, rescale it to GeV and 
+    update the title.
+    """
+    hist = orig_hist.Clone()
+    for axis in (hist.GetXaxis(), hist.GetYaxis()):
+        if "[MeV]" in axis.GetTitle():
+            axis.SetTitle(axis.GetTitle().replace("[MeV]", "[GeV]"))
+            scale_axis(axis, 1e-3)
+            
+    return hist
+    
+def scale_axis(axis, scale):
+    bins = axis.GetXbins()
+    new_bins = array("d", (bins[i]*scale for i in xrange(axis.GetNbins()+1)))
+    axis.Set(axis.GetNbins(), new_bins)
+
 def normalize_by_axis(hist, xaxis=True):
     """
     Normalise rows or columns of a 2D histogram
