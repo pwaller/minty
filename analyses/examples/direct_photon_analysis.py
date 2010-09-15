@@ -43,6 +43,9 @@ def counts(ana, event, name, objects):
         fill_counts(o.loose, o.tight, o.robust_tight, o.pass_fiducial, o.good_oq, 
                     *ev_cuts)
 
+TITLE_SMEAR = "p_{T} smearing matrix;Truth p_{T} [MeV];Measured p_{T} [MeV]"
+TITLE_SMEAR_CLUS = "p_{T} smearing matrix;Truth p_{T} [MeV];Measured (cluster) p_{T} [MeV]"
+
 def plot_pts(ana, name, bins, obj):
     """
     Plot Pt histograms
@@ -53,8 +56,8 @@ def plot_pts(ana, name, bins, obj):
     ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster"))(obj.cl.pt)
     
     if ana.info.have_truth:
-        ana.h.get(name, "pt_smearmat",    b=(bins, bins), title="p_{T} smearing matrix;Truth p_{T};Measured p_{T}")(obj.truth.pt, obj.pt)
-        ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title="p_{T} smearing matrix;Truth p_{T};Measured (cluster) p_{T}")(obj.truth.pt, obj.cl.pt)
+        ana.h.get(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
+        ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
     
         ana.h.get(name, "pt_true", b=(bins,), title=T("true"))(obj.truth.pt)
         
