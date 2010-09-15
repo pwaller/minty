@@ -1,7 +1,10 @@
+from minty.utils import timer
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
 from minty.metadata import TallyManager
 from minty.treedefs.egamma import egamma_wrap_tree
+
+from logbook import Logger; log = Logger("AnalysisBase")
 
 class DropEvent(Exception):
     pass
@@ -59,8 +62,10 @@ class AnalysisBase(object):
             raise
         
     def run(self):
-        self.input_tree.loop(self.event, lo=self.options.skip, hi=self.options.limit)
+        with timer("perform analysis loop") as t:
+            events = self.input_tree.loop(self.event, 
+                                          lo=self.options.skip, 
+                                          hi=self.options.limit)
+        log.info("Looped over %i events at %.2f events/sec" % (events, events / t.elapsed))
         self.finalize()
-
-
 

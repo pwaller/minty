@@ -2,6 +2,29 @@ from __future__ import with_statement
 
 import ROOT as R
 
+from contextlib import contextmanager
+from time import time
+
+from logbook import Logger
+
+time_logger = Logger("timer")
+@contextmanager
+def timer(what):
+    start = time()
+    class Timer(object):
+        _elapsed = None
+        @property
+        def elapsed(self):
+            if self._elapsed:
+                return self._elapsed
+            return time() - start
+    timer = Timer()
+    try:
+        yield timer
+    finally:
+        timer._elapsed = time() - start
+        time_logger.info("Took %.3f to %s" % (timer.elapsed, what))
+
 def init_root():
     """
     Make ROOT init happen without it having argv, so it doesn't catch --help
