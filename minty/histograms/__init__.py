@@ -44,6 +44,47 @@ def double_bins(bins):
         result.append(next)
     return ("var",) + tuple(result)
 
+def scale_bins(bins, factor):
+    """
+    Scale bins by a factor
+    """
+    assert bins[0] == "var"
+    bins = bins[1:] # remove "var"
+    def scale(n): return n * factor
+    return ("var",) + tuple(map(scale, bins))
+
+def normalize_by_axis(hist, xaxis=True):
+    """
+    Normalise rows or columns of a 2D histogram
+    xaxis = True => normalize Y bins in each X bin to the sum of the X bin.
+    """
+    if xaxis:
+        Project, axis = hist.ProjectionY, hist.GetXaxis()
+    else:
+        Project, axis = hist.ProjectionX, hist.GetYaxis()
+    
+    for bin in xrange(0, axis.GetNbins() + 2):
+        
+        proj = Project("_slice", bin, bin)
+        integral = proj.Integral()
+        if integral:
+            proj.Scale(1. / integral)
+        
+        # Insert slice
+        insert_slice(proj, hist, bin, not xaxis)
+    
+def insert_slice(hist, into, slice_bin, xaxis=True):
+    """
+    Insert a 1D histogram `hist` into a row or column of a 2D histogram `into`
+    """
+    if xaxis:
+        for bin in xrange(0, hist.GetNbinsX() + 2):
+            into.SetBinContent(bin, slice_bin, hist.GetBinContent(bin))
+            
+    else:
+        for bin in xrange(0, hist.GetNbinsX() + 2):
+            into.SetBinContent(slice_bin, bin, hist.GetBinContent(bin))
+
 AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
 
 def make_sparse_hist_filler(hist):
