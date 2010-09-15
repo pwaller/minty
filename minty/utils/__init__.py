@@ -23,20 +23,6 @@ def init_root():
     R.gStyle.SetPalette(1)
 init_root()
 
-from OQMaps import check_photon, check_electron
-
-def mark_object_quality(ana, event):
-    run = event.RunNumber
-    
-    for ph in event.photons:
-        ph.good_oq = check_photon(run, ph.cl.eta, ph.cl.phi) != 3
-        
-    for el in event.electrons:
-        el.good_oq = check_electron(run, el.cl.eta, el.cl.phi) != 3
-
-def mark_is_grl(ana, event):
-    event.is_grl = (event.RunNumber, event.LumiBlock) in ana.grl
-
 exiting = False
 @R.TPyDispatcher
 def count_canvases():

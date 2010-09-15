@@ -12,10 +12,8 @@ class AnalysisBase(object):
         self.input_tree = egamma_wrap_tree(input_tree)
         self.info = self.input_tree._selarg
         
-        if options.grl_path:
-            self.grl = GRL(options.grl_path)
-        else:
-            self.grl = FakeGRL()
+        self.setup_grl(options)
+        self.setup_objects()
         
         self.histogram_manager = self.h = HistogramManager()
         self.tally_manager = TallyManager()
@@ -24,6 +22,25 @@ class AnalysisBase(object):
         #self.tally_manager.count("runlumi", (Run, LumiNum))
         
         self.tasks = []
+    
+    def setup_grl(self, options):
+        if options.grl_path:
+            self.grl = GRL(options.grl_path)
+        else:
+            self.grl = FakeGRL()
+    
+    def setup_objects(self):
+        """
+        Give objects access to information they need.
+        
+        sort-of hack, but I don't know how else to get this information around.
+        """
+        tree = self.input_tree
+        from treedefs.base import EGamma
+        EGamma._event = self.input_tree
+        
+        global_instance = tree.Global_obj._instance
+        global_instance._grl = self.grl
     
     def finalize(self):
         self.histogram_manager.finalize()

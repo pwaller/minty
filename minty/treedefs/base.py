@@ -4,6 +4,7 @@ from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
 from math import tanh, cosh
 
 from PhotonIDTool import get_photon_robust_tight
+from OQMaps import check_photon, check_electron
 
 import ROOT as R
 
@@ -40,6 +41,12 @@ class Global(object):
     RunNumber = TI.int(naming(pau="Run"))
     EventNumber = TI.int(naming(pau="Event"))
     LumiBlock = TI.int(naming(eg="lbn"))
+    
+    _grl = None # Populated by AnalysisBase.setup_objects
+    
+    @property
+    def is_grl(self):
+        return (self.RunNumber, self.EventNumber) in self._grl
 
 class Particle(Fourvec_PtEtaPhiE):
     "Defines an object with (pt, eta, phi, E) available)."
@@ -58,6 +65,13 @@ class Jet(Fourvec_PtEtaPhiE):
 class EGamma(Particle):
     isEM = TI.float
     etas2 = TI.float(naming(pau="etaS2"))
+    
+    oq_function = None # Populated by child classes
+    _event = None # Populated by AnalysisBase.setup_objects
+    @property
+    def good_oq(self):
+        oq = self.oq_function(self._event.RunNumber, self.cl.eta, self.cl.phi)
+        return oq < 3
     
     @property
     def reta(self):
@@ -126,6 +140,8 @@ class Photon(EGamma):
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
     
+    oq_function = check_photon
+    
     @property
     def robust_tight(self):
         return get_photon_robust_tight(self)
@@ -137,6 +153,8 @@ class Photon(EGamma):
 
 class Electron(EGamma):
     __rootname__ = "el"
+
+    oq_function = check_electron
 
     # Not yet implemented
     pass_fiducial = robust_tight = 0

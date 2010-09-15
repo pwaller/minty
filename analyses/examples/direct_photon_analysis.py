@@ -139,12 +139,9 @@ class DirectPhotonAnalysis(AnalysisBase):
         
         self.ptbins_fine  = double_bins(self.ptbins)
         self.etabins_fine = double_bins(self.etabins)
-                
-        from minty.utils import mark_is_grl, mark_object_quality
+        
         # Tasks to run in order
         self.tasks.extend([
-            mark_is_grl,
-            mark_object_quality,
             lambda a, e: counts(a, e, "photons", e.photons),
             plots,
             #make_tight_ph_tree,
