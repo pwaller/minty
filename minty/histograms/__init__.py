@@ -101,7 +101,9 @@ class HistogramManager(object):
         self.filler_store = {}
     
     def finalize(self):
-        pass
+        f = R.TFile("output.root", "recreate")
+        self.save()
+        f.Close()
 
     def save(self):
         for histogram in self.histo_store.values():
