@@ -11,7 +11,14 @@ def init_root():
     import sys
     with silence_sout_serr(lambda s: "duplicate entry" in s):
         oldargv = sys.argv; sys.argv = []; R.kTRUE; sys.argv = oldargv
-        
+    
+    # Help ROOT's memory management
+    creating_functions = [
+        R.TH2.ProjectionX, R.TH2.ProjectionY, R.TH3.ProjectionZ,
+        R.THnSparse.Projection,
+    ]
+    for func in creating_functions: func._creates = 1
+    
     R.TH1.SetDefaultSumw2()
     R.gStyle.SetPalette(1)
 init_root()
