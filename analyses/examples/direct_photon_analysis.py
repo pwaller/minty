@@ -7,7 +7,8 @@
 import os; import sys; sys.path.insert(0, os.getcwd())
 
 from minty import main, AnalysisBase
-from minty.histograms import double_bins, mirror_bins
+from minty.histograms import double_bins, mirror_bins, scale_bins
+from minty.treedefs.egamma import Photon, Electron
 
 from math import cosh
 
@@ -33,10 +34,10 @@ def counts(ana, event, name, objects):
         
     ev_cuts = event.is_grl, pv, event.EF.g10_loose
     
-    cuts = "loose:tight:robust_tight:fiducial:oq:grl:pv:g10_loose"
-    cut_binning = ((2, 0, 2),) * len(cuts.split(":"))
+    cuts = "loose;tight;robust_tight;fiducial;oq;grl;pv;g10_loose"
+    cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
-                            title="%s counts passing cuts:%s" % (name, cuts))
+                            title="%s counts passing cuts;%s" % (name, cuts))
     
     for o in objects:
         fill_counts(o.loose, o.tight, o.robust_tight, o.pass_fiducial, o.good_oq, 
@@ -46,28 +47,35 @@ def plot_pts(ana, name, bins, obj):
     """
     Plot Pt histograms
     """
-    ana.h.get(name, "pt",    b=(bins,))(obj.pt)
-    ana.h.get(name, "pt_cl", b=(bins,))(obj.cl.pt)
+    def T(what=""): return "%sp_{T};%sp_{T} [MeV];N events" % (what, what)
     
-    ana.h.get(name, "pt_smearmat",    b=(bins, bins))(obj.truth.pt, obj.pt)
-    ana.h.get(name, "pt_cl_smearmat", b=(bins, bins))(obj.truth.pt, obj.cl.pt)
+    ana.h.get(name, "pt",    b=(bins,), title=T()         )(obj.pt)
+    ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster"))(obj.cl.pt)
     
-    return
-    if ana.have_truth:
-        ana.h.get(name, "pt_true", b=(bins,))(obj.truth.pt)
+    if ana.info.have_truth:
+        ana.h.get(name, "pt_smearmat",    b=(bins, bins), title="p_{T} smearing matrix;Truth p_{T};Measured p_{T}")(obj.truth.pt, obj.pt)
+        ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title="p_{T} smearing matrix;Truth p_{T};Measured (cluster) p_{T}")(obj.truth.pt, obj.cl.pt)
+    
+        ana.h.get(name, "pt_true", b=(bins,), title=T("true"))(obj.truth.pt)
         
-        if type(obj).__name__ == "Photon":
+        if isinstance(obj, Photon):
+            def T(what=""): return "Photon %sp_{T};%s#Deltap_{T} [MeV];N events" % (what, what)
+            ptres_binning = 1000, -20000, 20000
             pt_res    = obj.truth.pt - obj.pt
             pt_cl_res = obj.truth.pt - obj.cl.pt
-        elif type(obj).__name__ == "Electron":
+            
+        elif isinstance(obj, Electron):
+            def T(what=""): return "Electron %sp_{T};%s#Deltap_{T} [1/MeV];N events" % (what, what)
+            ptres_binning = 1000, -10, 10
             name += ("reciprocal",)
             pt_res    = 1/obj.truth.pt - 1/obj.pt
             pt_cl_res = 1/obj.truth.pt - 1/obj.cl.pt
+            
         else:
             raise RuntimeError("Unexpected object type")
         
-        ana.h.get(name, "pt_res",    b=(ana.ptres_binning,))(pt_res)
-        ana.h.get(name, "pt_cl_res", b=(ana.ptres_binning,))(pt_cl_res)         
+        ana.h.get(name, "pt_res",    b=(ptres_binning,), title=T()         )(pt_res)
+        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster"))(pt_cl_res)         
 
 def plot_object(ana, event, name, obj):
     """
@@ -126,14 +134,12 @@ class DirectPhotonAnalysis(AnalysisBase):
         super(DirectPhotonAnalysis, self).__init__(tree, options)
         
         self.ptbins = ("var", 15, 20, 25, 30, 35, 40, 50, 60, 100)
+        self.ptbins = scale_bins(self.ptbins, 1000)
         self.etabins = mirror_bins(("var", 0., 0.60, 1.37, 1.52, 1.81, 2.37))
         
         self.ptbins_fine  = double_bins(self.ptbins)
         self.etabins_fine = double_bins(self.etabins)
-        
-        # Binning for resolution plots
-        self.res_binning = 1000, -10, 10
-        
+                
         from minty.utils import mark_is_grl, mark_object_quality
         # Tasks to run in order
         self.tasks.extend([

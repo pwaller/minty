@@ -70,11 +70,12 @@ class HistogramManager(object):
         # Other default kwargs
         
         hname_str = "_".join(expand_hname(*hname))
-        htitle = kwargs.pop("htitle", hname_str)
+        title = kwargs.pop("title", hname_str)
         if not "b" in kwargs:
             raise RuntimeError("Please specify binning "
                                   "(`b=` in HistogramManager.get)")
         binning = kwargs.pop("b")
+        assert not kwargs, "Unrecognized arguments to build_histogram: %r" % kwargs
     
         dimensions = len(binning)
         
@@ -98,9 +99,9 @@ class HistogramManager(object):
                         "three long, or the first element must be 'var' to "
                         "indicate variable binning")
                     
-            hist = TH(hname_str, htitle, *binning_args)
+            hist = TH(hname_str, title, *binning_args)
             for fixup_axis, binning in fixup_axes:
-                print "Setting axis:", fixup_axis, binning
+                #print "Setting axis:", fixup_axis, binning
                 fixup_axis(hist).Set(len(binning)-1, array("d", binning))
                 
             filler = hist.Fill
@@ -126,11 +127,11 @@ class HistogramManager(object):
                     raise RuntimeError("A given set of bins should either be "
                         "three long, or the first element must be 'var'")
 
-            hist = R.THnSparseF(hname_str, htitle, dimensions, 
+            hist = R.THnSparseF(hname_str, title, dimensions, 
                                 nbins, xmins, xmaxs)
                                 
             for i, binning in fixup_axes:
-                print "Setting axis (Sp):", i, binning
+                #print "Setting axis (Sp):", i, binning
                 hist.GetAxis(i).Set(len(binning)-1, array("d", binning))
             
             filler = make_sparse_hist_filler(hist)

@@ -10,6 +10,7 @@ class AnalysisBase(object):
     def __init__(self, input_tree, options):
         self.options = options
         self.input_tree = egamma_wrap_tree(input_tree)
+        self.info = self.input_tree._selarg
         
         if options.grl_path:
             self.grl = GRL(options.grl_path)

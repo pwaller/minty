@@ -10,7 +10,7 @@ def egamma_wrap_tree(t):
     selarg.have_truth = any("truth" in l for l in leafset)
     selarg.tuple_type = {'PAUReco':'pau', 'egamma':'eg'}.get(t.GetName(), "eg")
     
-    tt = make_wrapper(t)
+    tt = make_wrapper(t, selarg=selarg)
     
     tt.add(Global)
     
