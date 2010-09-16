@@ -4,6 +4,9 @@ from .utils import make_chain
 from os import listdir
 from os.path import isdir, isfile
 from sys import stderr
+from pprint import pprint
+
+from logbook import Logger; log = Logger("option handling")
 
 def load_files(files):
     
@@ -28,7 +31,7 @@ def load_files(files):
             actual_files.extend(filename.split(r"\n"))
     
     if using_workaround:
-        print >>stderr, r"Using workaround. input.txt lines contain '\n'"
+        log.warn(r"Using workaround. input.txt lines contain '\n'")
     
     return actual_files
 
@@ -45,6 +48,11 @@ def parse_options(argv):
         p.error("Specify files to run on!")
     
     actual_files = load_files(files)
-    print "Operating on", actual_files
+    log.info("Operating on the following files:")
+    log.info(pformat(actual_files[:10]))
+    if len(actual_files) > 10:
+        log.info("[skipped %i filenames]" % (len(actual_files) - 20))
+        log.info(pformat(actual_files[-10:]))
+        
     
     return options, make_chain(actual_files)
