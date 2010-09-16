@@ -13,7 +13,8 @@ def main():
     for run in runs:
         run_no, files = run[0], run[1:]
         print "Merging run %s (%i files)" % (run_no, len(files))
-        merge_all("mike-data-merged/%s.root" % run_no, files)
+        merge_all("mike-data-merged/%s.root" % run_no, files, 
+                  selection="e.Run == %s" % run_no)
         
 if __name__ == "__main__":
     main()
