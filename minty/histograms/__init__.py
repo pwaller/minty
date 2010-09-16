@@ -4,6 +4,9 @@ from __future__ import division
 import ROOT as R
 from array import array
 from ctypes import POINTER, c_double
+
+import re
+
 NULL_DOUBLEPTR = POINTER(c_double)()
 NULL_DOUBLEPTR.typecode = "d"
 NULL_DOUBLEPTR.itemsize = 8
@@ -53,6 +56,22 @@ def scale_bins(bins, factor):
     def scale(n): return n * factor
     return ("var",) + tuple(map(scale, bins))
 
+def fixup_hist_units(orig_hist):
+    hist = histaxes_mev_to_gev(orig_hist)
+    hist = meaningful_yaxis(hist)
+    return hist
+
+unit_re = re.compile(r"(\[[^\]]+\])")
+def meaningful_yaxis(orig_hist):
+    hist = orig_hist.Clone()
+    x_title = orig_hist.GetXaxis().GetTitle()
+    y_title = orig_hist.GetYaxis().GetTitle()
+    x_units = unit_re.search(x_title)
+    assert x_units, "Couldn't find unit on x-axis: %s" % x_title
+    hist.Scale(1, "width")
+    hist.GetYaxis().SetTitle("%s / %s" % (y_title, x_units.groups()[0]))
+    return hist
+
 def histaxes_mev_to_gev(orig_hist):
     """
     If an axis contains "[MeV]" in its title, rescale it to GeV and 
@@ -83,7 +102,9 @@ def normalize_by_axis(hist, xaxis=True):
     
     for bin in xrange(0, axis.GetNbins() + 2):
         
-        proj = Project("_slice", bin, bin)
+        # Note: this gets garbage collected if _creates is set on the funciton 
+        # object (as it is in init_root)
+        proj = Project("slice", bin, bin)
         integral = proj.Integral()
         if integral:
             proj.Scale(1. / integral)
