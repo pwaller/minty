@@ -4,7 +4,7 @@
 # (Or minty and pytuple are in the path)
 import os; import sys; sys.path.insert(0, os.getcwd())
 
-from minty.utils.hadd import merge_all
+from minty.tools.hadd import merge_all
 
 def main():
     with open("run_files") as fd:
