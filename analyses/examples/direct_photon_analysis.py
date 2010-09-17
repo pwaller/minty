@@ -12,19 +12,6 @@ from minty.treedefs.egamma import Photon, Electron
 
 from math import cosh
 
-class ExtraEgammaInfo(object):
-    """
-    Give egammas some additional properties so that one can write, e.g.
-    good_photons = [ph for ph in event.photons if ph.fiducial]
-    """
-    @property
-    def good_eta(self):
-        return abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37
-        
-    @property
-    def fiducial(self):
-        return self.cl.pt >= 15000 and self.good_eta
-
 def counts(ana, event, name, objects):
     """
     Fill a sparse histogram for counting cuts (allows one
@@ -37,7 +24,7 @@ def counts(ana, event, name, objects):
     cuts = "loose;tight;robust_tight;fiducial;oq;grl;pv;g10_loose"
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
-                            title="%s counts passing cuts;%s" % (name, cuts))
+                            title="%s counts passing cuts;%s;" % (name, cuts))
     
     for o in objects:
         fill_counts(o.loose, o.tight, o.robust_tight, o.pass_fiducial, o.good_oq, 

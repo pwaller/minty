@@ -4,7 +4,7 @@ from .utils import make_chain
 from os import listdir
 from os.path import isdir, isfile
 from sys import stderr
-from pprint import pprint
+from pprint import pformat
 
 from logbook import Logger; log = Logger("option handling")
 

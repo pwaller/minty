@@ -46,7 +46,7 @@ class Global(object):
     
     @property
     def is_grl(self):
-        return (self.RunNumber, self.EventNumber) in self._grl
+        return (self.RunNumber, self.LumiBlock) in self._grl
 
 class Particle(Fourvec_PtEtaPhiE):
     "Defines an object with (pt, eta, phi, E) available)."
@@ -68,6 +68,7 @@ class EGamma(Particle):
     
     oq_function = None # Populated by child classes
     _event = None # Populated by AnalysisBase.setup_objects
+    
     @property
     def good_oq(self):
         oq = self.oq_function(self._event.RunNumber, self.cl.eta, self.cl.phi)

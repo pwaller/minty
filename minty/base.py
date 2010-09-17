@@ -62,10 +62,13 @@ class AnalysisBase(object):
             raise
         
     def run(self):
+        events = min(self.input_tree.tree.GetEntries(), self.options.limit)
+        log.info("Will process %i events." % events)
         with timer("perform analysis loop") as t:
-            events = self.input_tree.loop(self.event, 
-                                          lo=self.options.skip, 
-                                          hi=self.options.limit)
+            events = self.input_tree.loop(
+                self.event, lo=self.options.skip, 
+                hi=self.options.skip+self.options.limit)
+                
         log.info("Looped over %i events at %.2f events/sec" % (events, events / t.elapsed))
         self.finalize()
 

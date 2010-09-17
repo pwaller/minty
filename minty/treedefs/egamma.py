@@ -20,8 +20,8 @@ def egamma_wrap_tree(t):
         tt.add_list(PassEF, "PassEF", 9)
         Trigger.g10_loose = property(lambda _: tt.PassEF[3].ph)
     
-    tt.add(Trigger, "EF", create=False)
-    tt.add(Trigger, "L2", create=False)
+    tt.add(Trigger, "EF", create=False, warnmissing=True)
+    tt.add(Trigger, "L2", create=False, warnmissing=True)
     
     tt.add_list(Vertex,   "vertices",      300, create=False, warnmissing=True)
     
