@@ -132,10 +132,15 @@ class DirectPhotonAnalysis(AnalysisBase):
         
         # Tasks to run in order
         self.tasks.extend([
-            lambda a, e: counts(a, e, "photons", e.photons),
+            lambda a, e: counts(a, e, "photon", e.photons),
+            lambda a, e: counts(a, e, "electron", e.electrons),
             plots,
             #make_tight_ph_tree,
         ])
+        
+    def finalize(self):
+        super(DirectPhotonAnalysis, self).finalize()
+
 
 def do_more_stuff(ana, event):
     pass

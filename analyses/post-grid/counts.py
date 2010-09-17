@@ -9,6 +9,8 @@ from IPython.Shell import IPShellEmbed; ip = IPShellEmbed(["-pdb"])
 from minty.histograms.cuts_histogram import make_cut_histogram
 import ROOT as R
 
+from array import array
+
 def print_stats(axis):
     print "%12s" % axis.title, "total=%6i" % axis.true,
     proj = axis.project_out(True)
@@ -25,7 +27,13 @@ def print_stats(axis):
         #if len(combined) == 4:ip()
         
     print " ".join(counts)
-      
+    
+def hist_iterator(hist):
+    coord = array("i", [0] * hist.GetDimension())
+    for i in xrange(hist.GetNbins()):
+        value = hist.GetBinContent(i, coord)
+        yield tuple(coord), value
+          
 def test_run(input_file):
     
     f = R.TFile(input_file)   

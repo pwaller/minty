@@ -39,7 +39,7 @@ class CutAxis(object):
         
         #return h.GetBin(array("i", values))
         if len(self.titles) > 3:
-            return h.GetBin(array("i", values))
+            return h.GetBin(array("d", values))
         else:
             return h.FindBin(*values)
 
@@ -149,8 +149,8 @@ class CutHistogram(object):
     
     def project(self, *axes):
         assert len(axes) < len(self.axes)
+        #print "Projecting axes:", axes, [self.hist.GetAxis(i).GetTitle() for i in axes]
         
-        """
         if len(self.axes) == 3:
             new_h = self.hist.Project3D("".join("xyz"[i] for i in axes))
             new_h.SetDirectory(None)
@@ -159,9 +159,7 @@ class CutHistogram(object):
             do_proj = [self.hist.ProjectionX, self.hist.ProjectionY][axes[0]]
             new_h = do_proj()
             new_h.SetDirectory(None)
-        """
-        
-        if len(axes) <= 3:
+        elif len(axes) <= 3:
             new_h = self.hist.Projection(*axes)
             new_h.SetDirectory(None)
         else:
