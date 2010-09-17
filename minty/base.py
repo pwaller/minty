@@ -1,4 +1,4 @@
-from minty.utils import timer
+from minty.utils import timer, event_cache
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
 from minty.metadata import TallyManager
@@ -51,6 +51,7 @@ class AnalysisBase(object):
         
     def event(self, idx, event):
         event.index = idx
+        event_cache.invalidate()
         try:
             for task in self.tasks:
                 task(self, event)

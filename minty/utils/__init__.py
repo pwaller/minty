@@ -7,6 +7,8 @@ from time import time
 
 from logbook import Logger
 
+from .event_cache import event_cache
+
 time_logger = Logger("timer")
 @contextmanager
 def timer(what):

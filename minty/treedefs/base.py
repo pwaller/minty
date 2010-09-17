@@ -3,10 +3,17 @@ from pytuple.treeinfo import treeinfo as TI
 from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
 from math import tanh, cosh
 
-from PhotonIDTool import get_photon_robust_tight
+from PhotonIDTool import PhotonIDTool
 from OQMaps import check_photon, check_electron
 
 import ROOT as R
+
+from ..utils import event_cache
+
+@property
+def raise_not_implemented(self):
+    "When this property is accessed, an error is raised"
+    raise NotImplementedError
 
 class VariableSelection(object):
     have_truth = False
@@ -70,6 +77,7 @@ class EGamma(Particle):
     _event = None # Populated by AnalysisBase.setup_objects
     
     @property
+    @event_cache
     def good_oq(self):
         oq = self.oq_function(self._event.RunNumber, self.cl.eta, self.cl.phi)
         return oq < 3
@@ -144,10 +152,32 @@ class Photon(EGamma):
     oq_function = check_photon
     
     @property
+    @event_cache
+    def robust_idtool(self):
+        return PhotonIDTool(
+            self.cl.pt, self.etas2,
+            self.Ethad1, self.Ethad,
+            self.E277, self.E237, self.E233,
+            self.weta2,
+            self.f1,
+            self.emaxs1, self.Emax2, self.Emins1,
+            self.fside,
+            self.wstot, self.ws3,
+            self.isConv,        
+        )
+    
+    @property
+    @event_cache
     def robust_tight(self):
-        return get_photon_robust_tight(self)
+        return self.robust_idtool.PhotonCutsTight(3)
         
     @property
+    @event_cache
+    def robust_isEM(self):
+        return self.robust_idtool.isEM(3)
+        
+    @property
+    @event_cache
     def pass_fiducial(self):
         return (self.cl.pt >= 15000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37))        
