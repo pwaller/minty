@@ -135,12 +135,13 @@ def make_sparse_hist_filler(hist):
     return filler
 
 class HistogramManager(object):
-    def __init__(self):
+    def __init__(self, resultname):
         self.histo_store = {}
         self.filler_store = {}
+        self.resultname = resultname
     
     def finalize(self):
-        f = R.TFile("output.root", "recreate")
+        f = R.TFile(self.resultname, "recreate")
         self.save()
         f.Close()
 

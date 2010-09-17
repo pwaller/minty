@@ -18,7 +18,7 @@ class AnalysisBase(object):
         self.setup_grl(options)
         self.setup_objects()
         
-        self.histogram_manager = self.h = HistogramManager()
+        self.histogram_manager = self.h = HistogramManager(options.output)
         self.tally_manager = TallyManager()
         
         # TODO
