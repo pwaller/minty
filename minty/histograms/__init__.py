@@ -133,6 +133,12 @@ def make_sparse_hist_filler(hist):
         assert len(args) == dimensions, "Filling THnSparse with wrong number of arguments"
         hist.Fill(array('d', args), w)
     return filler
+    
+def thnsparse_iterator(hist):
+    coord = array("i", [0] * hist.GetDimension())
+    for i in xrange(hist.GetNbins()):
+        value = hist.GetBinContent(i, coord)
+        yield tuple(coord), value
 
 class HistogramManager(object):
     def __init__(self, resultname):
