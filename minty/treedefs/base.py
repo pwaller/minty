@@ -83,6 +83,10 @@ class EGamma(Particle):
         return oq < 3
     
     @property
+    def et(self):
+        return self.cl.E / cosh(self.etas2)
+    
+    @property
     def reta(self):
         return self.E237 / self.E277 if self.E277 else 0
         
@@ -155,7 +159,7 @@ class Photon(EGamma):
     @event_cache
     def robust_idtool(self):
         return PhotonIDTool(
-            self.cl.pt, self.etas2,
+            self.et, self.etas2,
             self.Ethad1, self.Ethad,
             self.E277, self.E237, self.E233,
             self.weta2,
