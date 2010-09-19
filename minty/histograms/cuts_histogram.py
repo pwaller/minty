@@ -49,14 +49,16 @@ class CutAxis(object):
         """
         # Keep track of previous axis states before projection
         set_axes = [] 
+        if not slices:
+            slices = (1,) * len(self.axes)
         
         for slice, axis in izip_longest(slices, self.axes):
             if isinstance(slice, (int, long)):
-                slice = self.find_bin(slice)
-                bin_range = slice, slice
+                bin = axis.FindBin(slice)
+                bin_range = bin, bin
             elif isinstance(slice, tuple):
                 lo, hi = slice
-                bin_range = self.find_bin(lo), self.find_bin(hi)
+                bin_range = axis.FindBin(lo), axis.FindBin(hi)
             elif slice is None:
                 bin_range = None
             else:
