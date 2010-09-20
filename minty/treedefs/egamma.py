@@ -12,20 +12,22 @@ def egamma_wrap_tree(t):
     
     tt = make_wrapper(t, selarg=selarg)
     
+    kwargs = dict(create=False, warnmissing=True)
+    
     tt.add(Global)
     
     if selarg.tuple_type == "pau":
         class PassEF(object):
             ph = TI.int
-        tt.add_list(PassEF, "PassEF", 9)
+        tt.add_list(PassEF, "PassEF", 9, **kwargs)
         Trigger.g10_loose = property(lambda _: tt.PassEF[3].ph)
     
-    tt.add(Trigger, "EF", create=False, warnmissing=True)
-    tt.add(Trigger, "L2", create=False, warnmissing=True)
+    tt.add(Trigger, "EF", **kwargs)
+    tt.add(Trigger, "L2", **kwargs)
     
-    tt.add_list(Vertex,   "vertices",      300, create=False, warnmissing=True)
+    tt.add_list(Vertex,   "vertices",      300, **kwargs)
     
-    tt.add_list(Photon,   "photons",       300, create=False, warnmissing=True)
-    tt.add_list(Electron, "electrons",     300, create=False, warnmissing=True)
+    tt.add_list(Photon,   "photons",       300, **kwargs)
+    tt.add_list(Electron, "electrons",     300, **kwargs)
         
     return tt
