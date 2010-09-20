@@ -7,7 +7,7 @@ def egamma_wrap_tree(t):
     leafset = set(l.GetName() for l in t.GetListOfLeaves())
     
     CurrentVS.args = selarg = VariableSelection()
-    selarg.have_truth = any("truth" in l for l in leafset)
+    selarg.have_truth = any("truth" in l or l.endswith("MC") for l in leafset)
     selarg.tuple_type = {'PAUReco':'pau', 'egamma':'eg'}.get(t.GetName(), "eg")
     
     tt = make_wrapper(t, selarg=selarg)
