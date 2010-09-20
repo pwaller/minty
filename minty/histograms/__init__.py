@@ -16,18 +16,21 @@ def mirror_bins(bins):
     bins = bins[1:] # remove "var"
     return ("var",) + tuple(map(float.__neg__, reversed(bins[1:]))) + bins
 
-def double_bins(bins):
+def double_bins(bins, doublings=1):
     """
     Given pt bins (15, 20, 30), return (15, 17.5, 20, 25, 30)
     """
     assert bins[0] == "var"
     bins = bins[1:] # remove "var"
-    result = []
-    for i, (this, next) in enumerate(zip(bins, bins[1:])):
-        if i == 0:
-            result.append(this)
-        result.append(this + (next-this)/2)
-        result.append(next)
+    
+    for i in xrange(doublings):
+        result = []
+        for i, (this, next) in enumerate(zip(bins, bins[1:])):
+            if i == 0:
+                result.append(this)
+            result.append(this + (next-this)/2)
+            result.append(next)
+        bins = result
     return ("var",) + tuple(result)
 
 def scale_bins(bins, factor):
