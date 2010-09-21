@@ -21,8 +21,12 @@ def expand_hname(*hname):
             result.extend(expand_hname(*element))
         elif element:
             # Empty elements are not included!
-            result.append(str(element))
-        
+            if "*" in result:
+                pos = (i for i, v in reversed(list(enumerate(result))) if v == "*").next()
+                result.insert(pos+1, str(element))
+            else:
+                result.append(str(element))
+    
     return result
 
 def build_histogram_plain(name, title, binning):
@@ -120,7 +124,8 @@ class HistogramManager(object):
         Create a histogram.
         """
         
-        name = "_".join(expand_hname(*hname))
+        name =  [element for element in expand_hname(*hname) if element != "*"]
+        name = "_".join(name)
         title = kwargs.pop("title", name) # title defaults to name
         if not "b" in kwargs:
             raise RuntimeError("Please specify binning "
