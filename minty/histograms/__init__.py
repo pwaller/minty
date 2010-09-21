@@ -76,11 +76,13 @@ def scale_axis(axis, scale):
     new_bins = array("d", (bins[i]*scale for i in xrange(axis.GetNbins()+1)))
     axis.Set(axis.GetNbins(), new_bins)
 
-def normalize_by_axis(hist, xaxis=True):
+def normalize_by_axis(orig_hist, xaxis=True):
     """
     Normalise rows or columns of a 2D histogram
     xaxis = True => normalize Y bins in each X bin to the sum of the X bin.
     """
+    hist = orig_hist.Clone()
+    
     if xaxis:
         Project, axis = hist.ProjectionY, hist.GetXaxis()
     else:
@@ -97,6 +99,8 @@ def normalize_by_axis(hist, xaxis=True):
         
         # Insert slice
         insert_slice(proj, hist, bin, not xaxis)
+        
+    return hist
     
 def insert_slice(hist, into, slice_bin, xaxis=True):
     """

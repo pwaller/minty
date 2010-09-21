@@ -2,6 +2,8 @@ from array import array
 
 import ROOT as R
 
+from logbook import Logger; log = Logger("HistogramManager")
+
 AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
 
 def make_sparse_hist_filler(hist):
@@ -100,6 +102,7 @@ class HistogramManager(object):
         R.TH1.AddDirectory(False)
     
     def finalize(self):
+        log.notice("Writing to %s" % self.resultname)
         f = R.TFile(self.resultname, "recreate")
         self.save()
         f.Close()
@@ -108,7 +111,8 @@ class HistogramManager(object):
         """
         Write histograms in name order.
         """
-        for name, histogram in sorted(self.histo_store.iteritems()):
+        nameshistos = [(h.GetName(), h) for h in self.histo_store.values()]
+        for name, histogram in sorted(nameshistos):
             histogram.Write()
 
     def build_histogram(self, *hname, **kwargs):
