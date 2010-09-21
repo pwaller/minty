@@ -40,13 +40,16 @@ def plot_pts(ana, name, bins, obj):
     def T(what=""): return "%sp_{T};%sp_{T} [MeV];N events" % (what, what)
     
     ana.h.get(name, "pt",    b=(bins,), title=T()         )(obj.pt)
-    ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster"))(obj.cl.pt)
+    ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster "))(obj.cl.pt)
+    
+    ana.h.get(name, "pt_vs_eta",    b=(bins, ana.etabins), title="cluster p_{T} vs #eta;cluster p_{T} [MeV];#eta_{S2};")(obj.cl.pt, obj.etas2)
     
     if ana.info.have_truth:
         ana.h.get(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
         ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
     
-        ana.h.get(name, "pt_true", b=(bins,), title=T("true"))(obj.truth.pt)
+        ana.h.get(name, "pt_true", b=(bins,), title=T("true "))(obj.truth.pt)
+        ana.h.get(name, "true_pt_vs_eta",    b=(bins, ana.etabins), title="true p_{T} vs #eta;true p_{T} [MeV];true #eta_{S2};")(obj.truth.pt, obj.truth.eta)
         
         if isinstance(obj, Photon):
             def T(what=""): return "Photon %sp_{T};%s#Deltap_{T} [MeV];N events" % (what, what)
@@ -65,7 +68,7 @@ def plot_pts(ana, name, bins, obj):
             raise RuntimeError("Unexpected object type")
         
         ana.h.get(name, "pt_res",    b=(ptres_binning,), title=T()         )(pt_res)
-        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster"))(pt_cl_res)         
+        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster "))(pt_cl_res)         
 
 def plot_object(ana, event, name, obj):
     """
@@ -75,7 +78,7 @@ def plot_object(ana, event, name, obj):
     plot_pts(ana, name,           ana.ptbins,      obj)
     
     # Once with finer binning
-    plot_pts(ana, (name, "fine"), ana.ptbins_fine, obj)
+    plot_pts(ana, (name, "*", "fine"), ana.ptbins_fine, obj)
     
     # More sets of plots come later
 
@@ -87,8 +90,11 @@ def plots(ana, event):
     # but left it expanded as two loops just to get an idea what it looks like
     
     for ph in event.photons:
-        if not (ph.tight and ph.pass_fiducial): continue
-        plot_object(ana, event, ("photon", "fiducial"), ph)
+        if not ph.pass_fiducial: continue
+        if not ph.loose: continue
+        plot_object(ana, event, ("photon", "loose"), ph)
+        if not ph.tight : continue
+        plot_object(ana, event, ("photon", "tight"), ph)
         
     for el in event.electrons:
         if not (el.tight and el.pass_fiducial): continue
@@ -127,8 +133,8 @@ class DirectPhotonAnalysis(AnalysisBase):
         self.ptbins = scale_bins(self.ptbins, 1000)
         self.etabins = mirror_bins(("var", 0., 0.60, 1.37, 1.52, 1.81, 2.37))
         
-        self.ptbins_fine  = double_bins(self.ptbins)
-        self.etabins_fine = double_bins(self.etabins)
+        self.ptbins_fine  = double_bins(self.ptbins, 4)
+        self.etabins_fine = double_bins(self.etabins, 4)
         
         # Tasks to run in order
         self.tasks.extend([
