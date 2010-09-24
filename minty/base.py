@@ -79,6 +79,7 @@ class AnalysisBase(object):
                 self.event, lo=self.options.skip, 
                 hi=self.options.skip+self.options.limit)
                 
-        log.info("Looped over %i events at %.2f events/sec" % (events, events / t.elapsed))
+        args = events, events / t.elapsed
+        log.info("Looped over %i events at %.2f events/sec" % args)
         self.finalize()
 

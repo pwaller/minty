@@ -39,12 +39,13 @@ def plot_pts(ana, name, bins, obj):
     """
     def T(what=""): return "%sp_{T};%sp_{T} [MeV];N events" % (what, what)
     
-    ana.h.get(name, "pt",    b=(bins,), title=T()         )(obj.pt)
+    ana.h.get(name, "pt",    b=(bins,), title=T()          )(obj.pt)
     ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster "))(obj.cl.pt)
     
     ana.h.get(name, "pt_vs_eta",    b=(bins, ana.etabins), title="cluster p_{T} vs #eta;cluster p_{T} [MeV];#eta_{S2};")(obj.cl.pt, obj.etas2)
     
-    if ana.info.have_truth:
+    if ana.info.have_truth and obj.truth.matched:
+    
         ana.h.get(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
         ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
     
@@ -118,20 +119,12 @@ def make_tight_ph_tree(ana, event):
 class DirectPhotonAnalysis(AnalysisBase):
     def __init__(self, tree, options):
     
-        """
-        # Additional information to decorate default objects with
-        from minty.treedefs import Photon, Electron
-        self.tree_extras = {
-            Photon   : ExtraEgammaInfo,
-            Electron : ExtraEgammaInfo,
-        }
-        """
-    
         super(DirectPhotonAnalysis, self).__init__(tree, options)
         
         self.ptbins = ("var", 15, 20, 25, 30, 35, 40, 50, 60, 100)
         self.ptbins = scale_bins(self.ptbins, 1000)
-        self.etabins = mirror_bins(("var", 0., 0.60, 1.37, 1.52, 1.81, 2.37))
+        self.etabins_sym = 0., 0.60, 1.37, 1.52, 1.81, 2.37
+        self.etabins = mirror_bins(("var", self.etabins_sym))
         
         self.ptbins_fine  = double_bins(self.ptbins, 4)
         self.etabins_fine = double_bins(self.etabins, 4)
