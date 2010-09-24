@@ -196,3 +196,21 @@ class Electron(EGamma):
 
     loose = TI.float(naming(pau="isElectronLoose"))
     tight = TI.float(naming(pau="isElectronTight"))
+    
+class TruthPhoton(Particle):
+    __rootname__ = "truth_ph"
+    
+    iRecPhoton = TI.int
+    isFromHardProc = TI.bool
+    
+    @property
+    def pass_fiducial(self):
+        return (self.pt >= 15000 and 
+                (abs(self.eta) < 1.37 or 1.52 <= abs(self.eta) < 2.37))
+                
+    @property
+    def reco(self):
+        if self.iRecPhoton == -1:
+            return None
+        return self._event.photons[self.iRecPhoton]
+        

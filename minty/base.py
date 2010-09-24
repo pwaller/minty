@@ -48,8 +48,8 @@ class AnalysisBase(object):
         sort-of hack, but I don't know how else to get this information around.
         """
         tree = self.input_tree
-        from treedefs.base import EGamma
-        EGamma._event = self.input_tree
+        from treedefs.base import EGamma, TruthPhoton
+        TruthPhoton._event = EGamma._event = self.input_tree
         
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl

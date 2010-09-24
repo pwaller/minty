@@ -1,4 +1,5 @@
-from .base import CurrentVS, VariableSelection, Global, Trigger, Vertex, Electron, Photon
+from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex, 
+                   Electron, Photon, TruthPhoton)
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
 
@@ -25,9 +26,10 @@ def egamma_wrap_tree(t):
     tt.add(Trigger, "EF", **kwargs)
     tt.add(Trigger, "L2", **kwargs)
     
-    tt.add_list(Vertex,   "vertices",      300, **kwargs)
+    tt.add_list(Vertex,      "vertices",      300, **kwargs)
     
-    tt.add_list(Photon,   "photons",       300, **kwargs)
-    tt.add_list(Electron, "electrons",     300, **kwargs)
+    tt.add_list(Photon,      "photons",       300, **kwargs)
+    tt.add_list(Electron,    "electrons",     300, **kwargs)
+    tt.add_list(TruthPhoton, "true_photons",  300, **kwargs)
         
     return tt
