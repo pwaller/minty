@@ -8,9 +8,18 @@ from logbook import Logger; log = Logger("AnalysisBase")
 
 class DropEvent(Exception):
     pass
+    
+# Needed at least because we give some of the tree objects a reference to the 
+# tree through their class definitions. This is a bad idea but there is no other
+# "get it working now" way that I am aware of.
+AnalysisSingleton = None
 
 class AnalysisBase(object):
     def __init__(self, input_tree, options):
+        global AnalysisSingleton
+        assert not AnalysisSingleton
+        AnalysisSingleton = self
+        
         self.options = options
         self.input_tree = egamma_wrap_tree(input_tree)
         self.info = self.input_tree._selarg
