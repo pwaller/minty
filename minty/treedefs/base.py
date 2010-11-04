@@ -60,6 +60,7 @@ class Particle(Fourvec_PtEtaPhiE):
 
 class Trigger(object):
     g10_loose = TI.bool
+    g40_loose = TI.bool
 
 class Vertex(object):
     __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
