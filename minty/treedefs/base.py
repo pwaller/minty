@@ -129,6 +129,14 @@ class EGamma(Particle):
     ws3     = TI.float(naming(pau="shwr_w1"))
     wstot   = TI.float(naming(pau="shwr_wtot"))
     
+    EtCone20 = TI.float(naming(pau="shwr_EtCone20"))
+    EtCone30 = TI.float(naming(pau="shwr_EtCone30"))
+    EtCone40 = TI.float(naming(pau="shwr_EtCone40"))
+    
+    EtCone20_corrected = TI.float(naming(pau="shwr_EtCone20_corrected"))
+    EtCone30_corrected = TI.float(naming(pau="shwr_EtCone30_corrected"))
+    EtCone40_corrected = TI.float(naming(pau="shwr_EtCone40_corrected"))
+    
     class Cluster(Particle):
         """
         egamma: ph_cl_*
