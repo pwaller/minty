@@ -185,7 +185,18 @@ class Photon(EGamma):
     @event_cache
     def robust_tight(self):
         return self.robust_idtool.PhotonCutsTight(3)
-        
+    
+    @property
+    @event_cache
+    def robust_nontight(self):
+        """
+        """
+        return not (self.robust_isEM & 0x45fc01)
+    
+    @property
+    def robust_tight_test(self):
+        return not (self.robust_isEM & 0xFFFFFFFF)
+    
     @property
     @event_cache
     def robust_isEM(self):

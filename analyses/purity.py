@@ -79,28 +79,28 @@ def plot_pts(ana, name, bins, obj):
 def plot_isolation(ana, name, obj):
     hget = ana.h.get
     
-    hget(name, "et",        b=[ana.ptbins]   )(obj.et)
-    hget(name, "etas2",     b=[ana.etabins]  )(obj.etas2)
-    hget(name, "Rhad",      b=[(100, -2, 2)] )(obj.Rhad)
-    hget(name, "Rhad1",     b=[(100, -2, 2)] )(obj.Rhad1)
+    hget(name, "et",        b=[ana.ptbins],     t=";E_{T} [MeV]"        )(obj.et)
+    hget(name, "etas2",     b=[ana.etabins],    t=";#eta_{s2} [MeV]"    )(obj.etas2)
+    hget(name, "Rhad",      b=[(100, -2, 2)],   t=";raphad"             )(obj.Rhad)
+    hget(name, "Rhad1",     b=[(100, -2, 2)],   t=";raphad1"            )(obj.Rhad1)
     
-    hget(name, "reta",      b=[(20, 0.9, 1)] )(obj.reta)
-    hget(name, "rphi",      b=[(15, 0.8, 1)] )(obj.rphi)
+    hget(name, "reta",      b=[(20, 0.9, 1)] ,  t=";R_{#eta}"           )(obj.reta)
+    hget(name, "rphi",      b=[(15, 0.8, 1)],   t=";R_{#phi}"           )(obj.rphi)
     
-    hget(name, "Eratio",    b=[(15, 0.7, 1)] )(obj.Eratio)
-    hget(name, "DeltaE",    b=[(15, 0, 500)] )(obj.deltaE)
+    hget(name, "Eratio",    b=[(15, 0.7, 1)],   t=";E_{ratio}"          )(obj.Eratio)
+    hget(name, "DeltaE",    b=[(15, 0, 500)],   t=";#DeltaE [MeV]"      )(obj.deltaE)
     
-    hget(name, "wstot",     b=[(15, 0, 5)]   )(obj.wstot)
-    hget(name, "ws3",       b=[(15, 0, 5)]   )(obj.ws3)
-    hget(name, "fside",     b=[(20, 0, 1.25)])(obj.fside)
+    hget(name, "wstot",     b=[(15, 0, 5)],     t=";wstot"              )(obj.wstot)
+    hget(name, "ws3",       b=[(15, 0, 5)],     t=";#eta_{s2} [MeV]"    )(obj.ws3)
+    hget(name, "fside",     b=[(20, 0, 1.25)],  t=";#eta_{s2} [MeV]"    )(obj.fside)
     
-    hget(name, "EtCone20",  b=[(100, -5000, 50000)])(obj.EtCone20)
-    hget(name, "EtCone30",  b=[(100, -5000, 50000)])(obj.EtCone30)
-    hget(name, "EtCone40",  b=[(100, -5000, 50000)])(obj.EtCone40)
+    hget(name, "EtCone20",  b=[(100, -5000, 50000)], t=";E_{T}^{cone20} [MeV]")(obj.EtCone20)
+    hget(name, "EtCone30",  b=[(100, -5000, 50000)], t=";E_{T}^{cone30} [MeV]")(obj.EtCone30)
+    hget(name, "EtCone40",  b=[(100, -5000, 50000)], t=";E_{T}^{cone40} [MeV]")(obj.EtCone40)
     
-    hget(name, "EtCone20_corrected",  b=[(100, -5000, 50000)])(obj.EtCone20_corrected)
-    hget(name, "EtCone30_corrected",  b=[(100, -5000, 50000)])(obj.EtCone30_corrected)
-    hget(name, "EtCone40_corrected",  b=[(100, -5000, 50000)])(obj.EtCone40_corrected)
+    hget(name, "EtCone20_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone20 (corected)} [MeV]")(obj.EtCone20_corrected)
+    hget(name, "EtCone30_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone30 (corected)} [MeV]")(obj.EtCone30_corrected)
+    hget(name, "EtCone40_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone40 (corected)} [MeV]")(obj.EtCone40_corrected)
 
 
 def plot_object(ana, name, obj):
