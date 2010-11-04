@@ -98,11 +98,11 @@ class EGamma(Particle):
     
     @property
     def Rhad(self):
-        return self.EtHad / (self.cl.E / cosh(self.etas2))
+        return self.Ethad / (self.cl.E / cosh(self.etas2))
         
     @property
     def Rhad1(self):
-        return self.EtHad1 / (self.cl.E / cosh(self.etas2))
+        return self.Ethad1 / (self.cl.E / cosh(self.etas2))
     
     @property
     def Eratio(self):
