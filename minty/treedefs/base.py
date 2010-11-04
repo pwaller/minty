@@ -113,6 +113,10 @@ class EGamma(Particle):
     def deltaE(self):
         return self.Emax2 - self.Emins1
         
+    @property
+    def nontight(self):
+        return not (self.isEM & 0x45fc01)
+    
     isConv  = TI.bool
     
     Ethad   = TI.float(naming(pau="shwr_EtHad"))
