@@ -126,7 +126,7 @@ class HistogramManager(object):
         
         name =  [element for element in expand_hname(*hname) if element != "*"]
         name = "_".join(name)
-        title = kwargs.pop("title", name) # title defaults to name
+        title = kwargs.pop("t", name) # title defaults to name
         if not "b" in kwargs:
             raise RuntimeError("Please specify binning "
                                   "(`b=` in HistogramManager.get)")

@@ -24,7 +24,7 @@ def counts(ana, event, name, objects):
     cuts = "loose;tight;robust_tight;fiducial;oq;grl;pv;g10_loose"
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
-                            title="%s counts passing cuts;%s;" % (name, cuts))
+                            t="%s counts passing cuts;%s;" % (name, cuts))
     
     for o in objects:
         fill_counts(o.loose, o.tight, o.robust_tight, o.pass_fiducial, o.good_oq, 
@@ -39,19 +39,19 @@ def plot_pts(ana, name, bins, obj):
     """
     def T(what=""): return "%sp_{T};%sp_{T} [MeV];N events" % (what, what)
     
-    ana.h.get(name, "pt",    b=(bins,), title=T()          )(obj.pt)
-    ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster "))(obj.cl.pt)
+    ana.h.get(name, "pt",    b=(bins,), t=T()          )(obj.pt)
+    ana.h.get(name, "pt_cl", b=(bins,), t=T("cluster "))(obj.cl.pt)
     
-    ana.h.get(name, "pt_vs_eta",    b=(bins, ana.etabins), title="cluster p_{T} vs #eta;cluster p_{T} [MeV];#eta_{S2};")(obj.cl.pt, obj.etas2)
+    ana.h.get(name, "pt_vs_eta",    b=(bins, ana.etabins), t="cluster p_{T} vs #eta;cluster p_{T} [MeV];#eta_{S2};")(obj.cl.pt, obj.etas2)
     
     if ana.info.have_truth and obj.truth.matched:
     
         ana.h.get(name, "match_count", b=((2, 0, 2),))(obj.truth.matched)
     
-        ana.h.get(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
-        ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
+        ana.h.get(name, "pt_smearmat",    b=(bins, bins), t=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
+        ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), t=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
     
-        ana.h.get(name, "pt_true", b=(bins,), title=T("true "))(obj.truth.pt)
+        ana.h.get(name, "pt_true", b=(bins,), t=T("true "))(obj.truth.pt)
         ana.h.get(name, "true_pt_vs_eta",    b=(bins, ana.etabins), title="true p_{T} vs #eta;true p_{T} [MeV];true #eta_{S2};")(obj.truth.pt, obj.truth.eta)
         
         if isinstance(obj, Photon):
@@ -70,8 +70,8 @@ def plot_pts(ana, name, bins, obj):
         else:
             raise RuntimeError("Unexpected object type")
         
-        ana.h.get(name, "pt_res",    b=(ptres_binning,), title=T()         )(pt_res)
-        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster "))(pt_cl_res)
+        ana.h.get(name, "pt_res",    b=(ptres_binning,), t=T()         )(pt_res)
+        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), t=T("cluster "))(pt_cl_res)
 
 def plot_object(ana, event, name, obj):
     """
