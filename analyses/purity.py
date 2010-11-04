@@ -159,7 +159,7 @@ def plots(ana, event):
     
     pv = any(v.nTracks >= 3 for v in event.vertices)
     
-    #if not all((pv, event.is_grl, event.EF.g10_loose)): return
+    if not all((pv, event.is_grl, event.EF.g10_loose)): return
         
     for ph in event.photons:
     
