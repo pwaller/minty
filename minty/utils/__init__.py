@@ -5,11 +5,11 @@ import ROOT as R
 from contextlib import contextmanager
 from time import time
 
-from logbook import Logger
+from logging import getLogger
 
 from .event_cache import event_cache
 
-time_logger = Logger("timer")
+time_logger = getLogger("minty.utils.timer")
 @contextmanager
 def timer(what):
     start = time()

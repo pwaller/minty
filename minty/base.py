@@ -6,7 +6,7 @@ from minty.histograms import HistogramManager
 from minty.metadata import TallyManager
 from minty.treedefs.egamma import egamma_wrap_tree
 
-from logbook import Logger; log = Logger("AnalysisBase")
+from logging import getLogger; log = getLogger("minty.base")
 
 class DropEvent(Exception):
     pass

@@ -8,7 +8,7 @@ Outputs a list of filenames which contain each run
 import os; import sys; sys.path.insert(0, os.getcwd())
 
 from minty import main, AnalysisBase
-from logbook import Logger; log = Logger("RunDiscoverer")
+from logging import getLogger; log = getLogger("minty.tools.discover_run_files")
 
 def record_run(ana, event):
     """

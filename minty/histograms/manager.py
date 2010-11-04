@@ -2,7 +2,7 @@ from array import array
 
 import ROOT as R
 
-from logbook import Logger; log = Logger("HistogramManager")
+from logging import getLogger; log = getLogger("minty.histograms.manager")
 
 AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
 
@@ -106,7 +106,7 @@ class HistogramManager(object):
         R.TH1.AddDirectory(False)
     
     def finalize(self):
-        log.notice("Writing to %s" % self.resultname)
+        log.info("Writing to %s" % self.resultname)
         f = R.TFile(self.resultname, "recreate")
         self.save()
         f.Close()

@@ -6,7 +6,7 @@ from os.path import isdir, isfile
 from sys import stderr
 from pprint import pformat
 
-from logbook import Logger; log = Logger("option handling")
+from logging import getLogger; log = getLogger("minty.options")
 
 def load_files(files):
     
