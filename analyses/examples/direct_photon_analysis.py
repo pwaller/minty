@@ -46,6 +46,8 @@ def plot_pts(ana, name, bins, obj):
     
     if ana.info.have_truth and obj.truth.matched:
     
+        ana.h.get(name, "match_count", b=((2, 0, 2),))(obj.truth.matched)
+    
         ana.h.get(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
         ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
     

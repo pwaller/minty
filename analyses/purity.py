@@ -37,22 +37,25 @@ def plot_pts(ana, name, bins, obj):
     """
     Plot Pt histograms
     """
+    return
     def T(what=""): return "%sp_{T};%sp_{T} [MeV];N events" % (what, what)
     
-    ana.h.get(name, "pt",    b=(bins,), title=T()          )(obj.pt)
-    ana.h.get(name, "pt_cl", b=(bins,), title=T("cluster "))(obj.cl.pt)
+    hget = ana.h.get
     
-    ana.h.get(name, "pt_vs_eta",    b=(bins, ana.etabins), title="cluster p_{T} vs #eta;cluster p_{T} [MeV];#eta_{S2};")(obj.cl.pt, obj.etas2)
+    hget(name, "pt",    b=(bins,), title=T()          )(obj.pt)
+    hget(name, "pt_cl", b=(bins,), title=T("cluster "))(obj.cl.pt)
+    
+    hget(name, "pt_vs_eta",    b=(bins, ana.etabins), title="cluster p_{T} vs #eta;cluster p_{T} [MeV];#eta_{S2};")(obj.cl.pt, obj.etas2)
     
     if ana.info.have_truth and obj.truth.matched:
     
-        ana.h.get(name, "match_count", b=((2, 0, 2),))(obj.truth.matched)
+        hget(name, "match_count", b=((2, 0, 2),))(obj.truth.matched)
     
-        ana.h.get(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
-        ana.h.get(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
+        hget(name, "pt_smearmat",    b=(bins, bins), title=TITLE_SMEAR     )(obj.truth.pt, obj.pt)
+        hget(name, "pt_cl_smearmat", b=(bins, bins), title=TITLE_SMEAR_CLUS)(obj.truth.pt, obj.cl.pt)
     
-        ana.h.get(name, "pt_true", b=(bins,), title=T("true "))(obj.truth.pt)
-        ana.h.get(name, "true_pt_vs_eta",    b=(bins, ana.etabins), title="true p_{T} vs #eta;true p_{T} [MeV];true #eta_{S2};")(obj.truth.pt, obj.truth.eta)
+        hget(name, "pt_true", b=(bins,), title=T("true "))(obj.truth.pt)
+        hget(name, "true_pt_vs_eta",    b=(bins, ana.etabins), title="true p_{T} vs #eta;true p_{T} [MeV];true #eta_{S2};")(obj.truth.pt, obj.truth.eta)
         
         if isinstance(obj, Photon):
             def T(what=""): return "Photon %sp_{T};%s#Deltap_{T} [MeV];N events" % (what, what)
@@ -70,24 +73,78 @@ def plot_pts(ana, name, bins, obj):
         else:
             raise RuntimeError("Unexpected object type")
         
-        ana.h.get(name, "pt_res",    b=(ptres_binning,), title=T()         )(pt_res)
-        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster "))(pt_cl_res)
+        hget(name, "pt_res",    b=(ptres_binning,), title=T()         )(pt_res)
+        hget(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster "))(pt_cl_res)
 
-def plot_object(ana, event, name, obj):
+def plot_isolation(ana, name, obj):
+    hget = ana.h.get
+    
+    hget(name, "et",        b=[ana.ptbins]   )(obj.et)
+    hget(name, "etas2",     b=[ana.etabins]  )(obj.etas2)
+    hget(name, "Rhad",      b=[(100, -2, 2)] )(obj.Rhad)
+    hget(name, "Rhad1",     b=[(100, -2, 2)] )(obj.Rhad1)
+    
+    hget(name, "reta",      b=[(20, 0.9, 1)] )(obj.reta)
+    hget(name, "rphi",      b=[(15, 0.8, 1)] )(obj.rphi)
+    
+    hget(name, "Eratio",    b=[(15, 0.7, 1)] )(obj.Eratio)
+    hget(name, "DeltaE",    b=[(15, 0, 500)] )(obj.deltaE)
+    
+    hget(name, "wstot",     b=[(15, 0, 5)]   )(obj.wstot)
+    hget(name, "ws3",       b=[(15, 0, 5)]   )(obj.ws3)
+    hget(name, "fside",     b=[(20, 0, 1.25)])(obj.fside)
+    
+    hget(name, "EtCone20",  b=[(100, -5000, 50000)])(obj.EtCone20)
+    hget(name, "EtCone30",  b=[(100, -5000, 50000)])(obj.EtCone30)
+    hget(name, "EtCone40",  b=[(100, -5000, 50000)])(obj.EtCone40)
+    
+    hget(name, "EtCone20_corrected",  b=[(100, -5000, 50000)])(obj.EtCone20_corrected)
+    hget(name, "EtCone30_corrected",  b=[(100, -5000, 50000)])(obj.EtCone30_corrected)
+    hget(name, "EtCone40_corrected",  b=[(100, -5000, 50000)])(obj.EtCone40_corrected)
+
+
+def plot_object(ana, name, obj):
     """
     Plot histograms for one object (electron, photon)
     """
     
-    plot_pts(ana, ("eta_all", name), ana.ptbins,      obj)
-    plot_pts(ana, ("fine",    name), ana.ptbins_fine, obj)
+    plot_pts(ana, (name, "eta_all"), ana.ptbins,      obj)
+    plot_pts(ana, (name, "fine"),    ana.ptbins_fine, obj)
+    
+    plot_isolation(ana, name, obj)
     
     # Make pt plots in bins of eta
     for i, (elow, ehi) in enumerate(zip(ana.etabins_sym[1:], ana.etabins_sym[2:])):
-        if elow <= obj.etas2 < ehi:
-            plot_pts(ana, ("eta_%i" % i, name), ana.ptbins, obj)
+        if not elow <= obj.etas2 < ehi:
+            continue
+        name_eta = (name, "eta_%i" % i)
+        plot_pts(ana, name_eta, ana.ptbins, obj)
+        plot_isolation(ana, name_eta, obj)
 
-    plot_pts(ana, ("auth_%i" % obj.author,    name), ana.ptbins_fine, obj)
+    name_auth = (name, "auth_%i" % obj.author)
+    plot_pts(ana, name_auth, ana.ptbins_fine, obj)
+    plot_isolation(ana, name_auth, obj)
     
+def plot_objects_multi_cuts(ana, name, obj):
+
+    plot_object(ana, (name, "loose"), obj)
+    if obj.robust_tight:
+        assert obj.robust_nontight, "Found a tight object which isn't nontight!"
+        
+    if not obj.robust_nontight: return
+    plot_object(ana, (name, "nontight"), obj)
+    
+    if not obj.robust_tight: return
+    plot_object(ana, (name, "rtight"), obj)
+
+def plot_objects_multi_pt(ana, name, obj):
+    plot_objects_multi_cuts(ana, (name, "ptcl_all"), obj)
+    
+    if obj.cl.pt > 40000:
+        plot_objects_multi_cuts(ana, (name, "ptcl_gt40"), obj)
+    else:
+        plot_objects_multi_cuts(ana, (name, "ptcl_lte40"), obj)
+
 def plots(ana, event):
     """
     Make plots for the event
@@ -100,13 +157,14 @@ def plots(ana, event):
     #if not all((pv, event.is_grl, event.EF.g10_loose)): return
         
     for ph in event.photons:
+    
+        #assert ph.robust_tight_test == ph.robust_tight
+    
         if not (ph.pass_fiducial and ph.loose and ph.good_oq): continue
         if ana.obj_selection and not ana.obj_selection(ph):
             continue
         
-        plot_object(ana, event, ("photon", "loose"), ph)
-        if not ph.robust_tight: continue
-        plot_object(ana, event, ("photon", "rtight"), ph)
+        plot_objects_multi_pt(ana, "photon", ph)
 
 class PurityAnalysis(AnalysisBase):
     def __init__(self, tree, options):
