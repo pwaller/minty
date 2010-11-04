@@ -32,7 +32,7 @@ def naming(**kwargs):
         if callable(varname):
             res = varname(rootname, leafname)
         elif "{" in varname:
-            res = varname.format(rootname=rootname, leafname="{leafname}")
+            res = varname.replace("{rootname}", rootname) #format(rootname=rootname, leafname="{leafname}")
         elif rootname:
             if "{leafname}" in rootname:
                 res = rootname.replace("{leafname}", leafname)

@@ -32,10 +32,11 @@ def init_root():
     Make ROOT init happen without it having argv, so it doesn't catch --help
     Also stop stupid duplicate warnings.
     """
-    from DQUtils.ext.silence import silence_sout_serr
-    import sys
-    with silence_sout_serr(lambda s: "duplicate entry" in s):
-        oldargv = sys.argv; sys.argv = []; R.kTRUE; sys.argv = oldargv
+    if False:
+        from DQUtils.ext.silence import silence_sout_serr
+        import sys
+        with silence_sout_serr(lambda s: "duplicate entry" in s):
+            oldargv = sys.argv; sys.argv = []; R.kTRUE; sys.argv = oldargv
     
     # Help ROOT's memory management
     creating_functions = [

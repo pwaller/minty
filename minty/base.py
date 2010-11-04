@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 from minty.utils import timer, event_cache
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
