@@ -21,13 +21,18 @@ def counts(ana, event, name, objects):
         
     ev_cuts = event.is_grl, pv, event.EF.g10_loose
     
-    cuts = "loose;tight;robust_tight;fiducial;oq;grl;pv;g10_loose"
+    cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
+            "high_pt;isolated;nonisolated;"
+            "fiducial;oq;"
+            "grl;pv;g10_loose")
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
                             title="%s counts passing cuts;%s;" % (name, cuts))
     
     for o in objects:
-        fill_counts(o.loose, o.tight, o.robust_tight, o.pass_fiducial, o.good_oq, 
+        fill_counts(o.loose, o.nontight, o.tight, o.robust_nontight, o.robust_tight, 
+                    o.high_pt, o.isolated, o.nonisolated,
+                    o.pass_fiducial, o.good_oq, 
                     *ev_cuts)
 
 TITLE_SMEAR = "p_{T} smearing matrix;Truth p_{T} [MeV];Measured p_{T} [MeV]"

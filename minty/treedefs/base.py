@@ -116,6 +116,18 @@ class EGamma(Particle):
     @property
     def nontight(self):
         return not (self.isEM & 0x45fc01)
+        
+    @property
+    def high_pt(self):
+        return self.pt > 40000
+        
+    @property
+    def isolated(self):
+        return self.EtCone40 < 3000
+        
+    @property
+    def nonisolated(self):
+        return self.EtCone40 > 5000
     
     isConv  = TI.bool
     
