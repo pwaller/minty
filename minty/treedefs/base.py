@@ -87,7 +87,10 @@ class EGamma(Particle):
     
     @property
     def et(self):
-        return self.cl.E / cosh(self.etas2)
+        try:
+            return self.cl.E / cosh(self.etas2)
+        except ZeroDivisionError:
+            return 0.
     
     @property
     def reta(self):
@@ -99,15 +102,24 @@ class EGamma(Particle):
     
     @property
     def Rhad(self):
-        return self.Ethad / (self.cl.E / cosh(self.etas2))
+        try:
+            return self.Ethad / (self.cl.E / cosh(self.etas2))
+        except ZeroDivisionError:
+            return 0.
         
     @property
     def Rhad1(self):
-        return self.Ethad1 / (self.cl.E / cosh(self.etas2))
+        try:
+            return self.Ethad1 / (self.cl.E / cosh(self.etas2))
+        except ZeroDivisionError:
+            return 0.
     
     @property
     def Eratio(self):
-        return (self.emaxs1 - self.Emax2) / (self.emaxs1 + self.Emax2)
+        try:
+            return (self.emaxs1 - self.Emax2) / (self.emaxs1 + self.Emax2)
+        except ZeroDivisionError:
+            return 0.
     
     @property
     def deltaE(self):

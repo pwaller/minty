@@ -68,10 +68,11 @@ class AnalysisBase(object):
                 task(self, event)
         except DropEvent:
             pass
-        except:
-            rlum = event.RunNumber, event.LumiBlock
-            print "Exception encountered in %r" % (rlum,)
+        except (KeyboardInterrupt, SystemExit):
             raise
+        except:
+            rlum = event.RunNumber, event.LumiBlock, event.index
+            log.exception("Exception encountered in (run, lb, idx) = %r", rlum)
         
     def run(self):
         events = min(self.input_tree.tree.GetEntries(), self.options.limit)

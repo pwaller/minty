@@ -11,7 +11,7 @@ from logging import getLogger; log = getLogger("minty.options")
 def load_files(files):
     
     actual_files = []
-    using_workaround = False
+    using_comma_workaround = using_newline_workaround = False
     for filename in files:
         
         if isdir(filename):
@@ -27,13 +27,22 @@ def load_files(files):
             # This deals with a bug on the grid where "\n" ended up in the
             # input.txt file rather than \n. This should get removed some time.
             if r"\n" in filename:
-                using_workaround = True
+                using_newline_workaround = True
             actual_files.extend(filename.split(r"\n"))
     
-    if using_workaround:
-        log.warn(r"Using workaround. input.txt lines contain '\n'")
+    real_actual_files = []
+    for filename in actual_files:
+        if "," in filename:
+            using_comma_workaround = True
+        real_actual_files.extend(filename.split(","))
     
-    return actual_files
+    if using_newline_workaround:
+        log.warn(r"Using workaround. input.txt lines contain '\n'")
+        
+    if using_comma_workaround:
+        log.warn(r"Using workaround. input.txt contains comma separated files.")
+    
+    return real_actual_files
 
 def parse_options(argv):
     p = OptionParser(usage="usage: %prog [options] [input files]")
