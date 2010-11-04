@@ -73,6 +73,8 @@ class EGamma(Particle):
     isEM = TI.float
     etas2 = TI.float(naming(pau="etaS2"))
     
+    author = TI.int
+    
     oq_function = None # Populated by child classes
     _event = None # Populated by AnalysisBase.setup_objects
     

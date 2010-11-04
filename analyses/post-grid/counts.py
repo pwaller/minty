@@ -45,7 +45,7 @@ def get_cut_stats(axis):
 def print_hist(orig_h):
     h_all = make_cut_histogram(orig_h)
     h = h_all.fiducial.project_out()
-    """
+    #"""
     #good = h_all.fiducial & h_all.grl
     #print good, good.project_out().loose, h_all.loose
     #h = good.project_out()
@@ -56,7 +56,7 @@ def print_hist(orig_h):
     #h = h.grl2.project_out(True)
     #print 
     return (map(int, [h.loose.true, h.tight.true, h.robust_tight.true]),)
-    """
+    #"""
     return (
         #get_cut_stats(h_all.fiducial),
         ["loose   "]    + get_cut_stats(h.loose),

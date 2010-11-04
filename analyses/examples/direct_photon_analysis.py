@@ -69,20 +69,23 @@ def plot_pts(ana, name, bins, obj):
             raise RuntimeError("Unexpected object type")
         
         ana.h.get(name, "pt_res",    b=(ptres_binning,), title=T()         )(pt_res)
-        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster "))(pt_cl_res)         
+        ana.h.get(name, "pt_cl_res", b=(ptres_binning,), title=T("cluster "))(pt_cl_res)
 
 def plot_object(ana, event, name, obj):
     """
     Plot histograms for one object (electron, photon)
     """
     
-    plot_pts(ana, name,           ana.ptbins,      obj)
+    plot_pts(ana, ("eta_all", name), ana.ptbins,      obj)
+    plot_pts(ana, ("fine",    name), ana.ptbins_fine, obj)
     
-    # Once with finer binning
-    plot_pts(ana, (name, "*", "fine"), ana.ptbins_fine, obj)
-    
-    # More sets of plots come later
+    # Make pt plots in bins of eta
+    for i, (elow, ehi) in enumerate(zip(ana.etabins_sym[1:], ana.etabins_sym[2:])):
+        if elow <= obj.etas2 < ehi:
+            plot_pts(ana, ("eta_%i" % i, name), ana.ptbins, obj)
 
+    plot_pts(ana, ("auth_%i" % obj.author,    name), ana.ptbins_fine, obj)#
+    
 def plots(ana, event):
     """
     Make plots for the event
@@ -90,70 +93,48 @@ def plots(ana, event):
     # Could do a loop over [("electron", ph.electrons), ("photon", ph.photons)]
     # but left it expanded as two loops just to get an idea what it looks like
     
+    pv = any(v.nTracks >= 3 for v in event.vertices)
+    
+    if not all((pv, event.is_grl, event.EF.g10_loose)):
+        return
+        
     for ph in event.photons:
-        if not ph.pass_fiducial: continue
-        if not ph.loose: continue
+        if not (ph.pass_fiducial and ph.loose and ph.good_oq): continue
+        if ana.obj_selection and not ana.obj_selection(ph):
+            continue
+        
         plot_object(ana, event, ("photon", "loose"), ph)
-        if not ph.tight : continue
-        plot_object(ana, event, ("photon", "tight"), ph)
-        
-    for el in event.electrons:
-        if not (el.tight and el.pass_fiducial): continue
-        plot_object(ana, event, ("electron", "fiducial"), el)
-
-def make_tight_ph_tree(ana, event):
-    """
-    An example of cloning part of a tree (only tight photons and "Global", which
-    are 
-    """
-    from minty.treedefs import Photon, Global
-    new_tree = ana.tree_manager.get("mytree", outfile="tight_phtree.root", 
-        new=[Photon], cloned=(event, [Global]))
-
-    # Copy tight photons to the new tree
-    for ph in [p for p in event.photons if p.tight]:
-        new_tree.photon.new(ph)
-        
-    new_tree.Fill()
+        if not ph.robust_tight: continue
+        plot_object(ana, event, ("photon", "rtight"), ph)
 
 class DirectPhotonAnalysis(AnalysisBase):
     def __init__(self, tree, options):
     
         super(DirectPhotonAnalysis, self).__init__(tree, options)
         
-        self.ptbins = ("var", 15, 20, 25, 30, 35, 40, 50, 60, 100)
+        self.ptbins = ("var", 15, 20, 25, 30, 35, 40, 50, 60, 100, 110)
         self.ptbins = scale_bins(self.ptbins, 1000)
-        self.etabins_sym = 0., 0.60, 1.37, 1.52, 1.81, 2.37
-        self.etabins = mirror_bins(("var", self.etabins_sym))
+        self.etabins_sym = "var", 0., 0.60, 1.37, 1.52, 1.81, 2.37
+        self.etabins = mirror_bins(self.etabins_sym)
         
-        self.ptbins_fine  = double_bins(self.ptbins, 4)
+        self.ptbins_fine  = double_bins(self.ptbins,  4)
         self.etabins_fine = double_bins(self.etabins, 4)
         
         # Tasks to run in order
         self.tasks.extend([
             lambda a, e: counts(a, e, "photon", e.photons),
-            lambda a, e: counts(a, e, "electron", e.electrons),
             plots,
-            #make_tight_ph_tree,
         ])
+        
+        if self.options.obj_selection:
+            expr = "lambda o: %s" % self.options.obj_selection
+            args = expr, "<options.obj_selection>", "eval"
+            self.obj_selection = eval(compile(*args))
+        else:
+            self.obj_selection = None
         
     def finalize(self):
         super(DirectPhotonAnalysis, self).finalize()
-
-
-def do_more_stuff(ana, event):
-    pass
-
-class DirectPhotonAnalysisExtension(DirectPhotonAnalysis):
-    """
-    Doing more stuff as well as the basic analysis
-    """
-    def __init__(self, tree, options):
-        super(DirectPhotonAnalysisExtension, self).__init__(tree, options)
-        
-        self.tasks.extend([
-            do_more_stuff,
-        ])
 
 if __name__ == "__main__":
     main(DirectPhotonAnalysis)
