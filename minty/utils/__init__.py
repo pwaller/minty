@@ -89,7 +89,7 @@ def prevent_close_with_canvases():
     register(wait_for_zero_canvases)
 
 def make_chain(files):
-    first_file = R.TFile(files[0])
+    first_file = R.TFile.Open(files[0])
     is_pau = "PAUReco" in set(k.GetName() for k in first_file.GetListOfKeys())
     if is_pau:
         treename = "PAUReco"
