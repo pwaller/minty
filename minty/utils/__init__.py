@@ -27,6 +27,19 @@ def timer(what):
         timer._elapsed = time() - start
         time_logger.info("Took %.3f to %s" % (timer.elapsed, what))
 
+@contextmanager
+def canvas(*args):
+    old_canvas = R.gPad.func()
+    c = R.TCanvas(*args)
+    c.cd()
+    try:
+        yield c
+    finally:
+        if old_canvas and getattr(old_canvas, "cd", None):
+            old_canvas.cd()
+        
+        
+
 def init_root():
     """
     Make ROOT init happen without it having argv, so it doesn't catch --help

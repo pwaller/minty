@@ -52,7 +52,10 @@ def meaningful_yaxis(orig_hist):
     hist = orig_hist.Clone()
     x_title = orig_hist.GetXaxis().GetTitle()
     y_title = orig_hist.GetYaxis().GetTitle()
+    if not y_title:
+        y_title = "N"
     x_units = unit_re.search(x_title)
+    if not x_units: return hist
     assert x_units, "Couldn't find unit on x-axis: %s" % x_title
     xunit = x_units.groups()[0]
     if xunit not in hist.GetYaxis().GetTitle():
@@ -73,9 +76,17 @@ def histaxes_mev_to_gev(orig_hist):
             
     return hist
     
-def scale_axis(axis, scale):
+def get_bin_positions(axis):
     bins = axis.GetXbins()
-    new_bins = array("d", (bins[i]*scale for i in xrange(axis.GetNbins()+1)))
+    if bins.fN:
+        return [bins[i] for i in xrange(bins.fN)]
+    xn, xmin, xmax = axis.GetNbins(), axis.GetXmin(), axis.GetXmax()
+    bwidth = (xmax - xmin) / xn
+    return [xmin + bwidth*i for i in xrange(xn)] + [xmax]
+    
+def scale_axis(axis, scale):
+    bins = get_bin_positions(axis)
+    new_bins = array("d", (bin*scale for bin in bins))
     axis.Set(axis.GetNbins(), new_bins)
 
 def normalize_by_axis(orig_hist, xaxis=True):
