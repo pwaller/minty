@@ -89,6 +89,9 @@ class AnalysisBase(object):
         except:
             rlum = event.RunNumber, event.LumiBlock, event.index
             log.exception("Exception encountered in (run, lb, idx) = %r", rlum)
+            if self.options.shell_on_exception:
+                raise
+            
             self.exception_count += 1
             if self.exception_count > self.options.max_exception_count:
                 raise RuntimeError("Encountered more than `max_exception_count`"
