@@ -198,6 +198,12 @@ def plots(ana, event):
             continue
         
         plot_objects_multi_pt(ana, "photon", ph)
+        
+        if ph.isConv:
+            plot_objects_multi_pt(ana, "convphoton", ph)
+        else:
+            plot_objects_multi_pt(ana, "unconvphoton", ph)
+            
 
 class PurityAnalysis(AnalysisBase):
     def __init__(self, tree, options):
