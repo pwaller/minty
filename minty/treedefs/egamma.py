@@ -9,7 +9,7 @@ def get_pau_trigger_indices(t):
     t.GetEntry(0)
     return list(enumerate(t.TriggersRun_ph))
 
-def setup_pau_trigger_info(t, tt, Trigger):
+def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
     class PassEF(object):
         ph = TI.int
@@ -20,11 +20,11 @@ def setup_pau_trigger_info(t, tt, Trigger):
             trig_name = "_" + trig_name
     
         trigger_func = lambda _: tt.PassEF[trig_index].ph
-        setattr(Trigger, trig_name, trigger_func)
+        setattr(Trigger, trig_name, property(trigger_func))
         trig_bit = 0x1 << trig_index
         trigger_objs_func = lambda _: [p for p in tt.photons 
                                        if p.EF_matchPass & trig_bit]
-        setattr(Trigger, trig_name + "_objects", trigger_objs_func)
+        setattr(Trigger, trig_name + "_objects", property(trigger_objs_func))
 
 def egamma_wrap_tree(t):
     
@@ -41,7 +41,7 @@ def egamma_wrap_tree(t):
     tt.add(Global)
     
     if selarg.tuple_type == "pau":   
-       setup_pau_trigger_info(t, tt, Trigger)
+       setup_pau_trigger_info(t, tt, Trigger, **kwargs)
     
     tt.add(Trigger, "EF", **kwargs)
     
