@@ -174,7 +174,9 @@ def fill_trigger_object_counts(ana, event):
         objects = getattr(EF, "%s_objects" % trig_name)
         ana.h.get((trig_name, "obj_count"), b=[(20, 0, 20)])(len(objects))
         
-        for obj in objects:
+        for i, obj in enumerate(objects):
+            if not i:
+                plot_objects_multi_pt(ana, ("photontrigonlyfirst", trig_name), obj)
             plot_objects_multi_pt(ana, ("photontrig", trig_name), obj)
 
 def plots(ana, event):

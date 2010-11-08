@@ -21,11 +21,12 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
         if trig_name[0].isdigit():
             trig_name = "_" + trig_name
     
-        trigger_func = lambda _: tt.PassEF[trig_index].ph
+        def trigger_func(_, trig_index=trig_index):
+            return tt.PassEF[trig_index].ph
         setattr(Trigger, trig_name, property(trigger_func))
         trig_bit = 0x1 << trig_index
-        trigger_objs_func = lambda _: [p for p in tt.photons 
-                                       if p.EF_matchPass & trig_bit]
+        def trigger_objs_func(_, trig_bit=trig_bit, tt=tt):
+            return [p for p in tt.photons if p.EF_matchPass & trig_bit]
         setattr(Trigger, trig_name + "_objects", property(trigger_objs_func))
 
 def egamma_wrap_tree(t):
