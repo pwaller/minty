@@ -19,12 +19,18 @@ def counts(ana, event, name, objects):
            
     pv = any(v.nTracks >= 3 for v in event.vertices)
         
-    ev_cuts = event.is_grl, pv, event.EF.g10_loose
+    ev_cuts = (event.is_grl, pv, 
+       event.EF.g10_loose, event.EF.g20_loose, event.EF.g30_loose, event.EF.g40_loose, 
+       event.EF.2g10_loose, event.EF.2g20_loose)
     
     cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
-            "high_pt;isolated;nonisolated;"
-            "fiducial;oq;"
-            "grl;pv;g10_loose")
+        "high_pt;isolated;nonisolated;"
+        "fiducial;oq;"
+        # Event-wise:
+        "grl;pv;"
+        # Trigger:
+        "g10_loose;g20_loose;g30_loose;g40_loose;"
+        "2g10_loose;2g20_loose")
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
                             t="%s counts passing cuts;%s;" % (name, cuts))
