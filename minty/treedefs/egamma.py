@@ -16,6 +16,9 @@ def setup_pau_trigger_info(t, tt, Trigger):
     tt.add_list(PassEF, "PassEF", 100, **kwargs)
     
     for trig_index, trig_name in get_pau_trigger_indices(t):
+        if trig_name[0].isdigit():
+            trig_name = "_" + trig_name
+    
         trigger_func = lambda _: tt.PassEF[trig_index].ph
         setattr(Trigger, trig_name, trigger_func)
         trig_bit = 0x1 << trig_index

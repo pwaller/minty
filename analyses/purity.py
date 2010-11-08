@@ -23,7 +23,7 @@ def counts(ana, event, name, objects):
     
     ev_cuts = (event.is_grl, pv, 
        EF.g10_loose, EF.g20_loose, EF.g30_loose, EF.g40_loose, 
-       EF.2g10_loose, EF.2g20_loose)
+       EF._2g10_loose, EF._2g20_loose)
     
     cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
         "high_pt;isolated;nonisolated;"
@@ -164,7 +164,7 @@ def fill_trigger_object_counts(ana, event):
     
     triggers = [
         "g10_loose", "g20_loose", "g30_loose", "g40_loose",
-        "2g10_loose", "2g20_loose",
+        "_2g10_loose", "_2g20_loose",
     ]
     
     for trig_name in triggers:

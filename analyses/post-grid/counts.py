@@ -49,7 +49,7 @@ def print_hist(orig_h):
     #good = h_all.fiducial & h_all.grl
     #print good, good.project_out().loose, h_all.loose
     #h = good.project_out()
-    h = good = h_all("fiducial", "grl2", "g10_loose", "oq", "pv")
+    h = good = h_all("fiducial", "g10_loose", "oq", "pv")
     n_all = good.true
     h = h.project_out()
     if not n_all: return None
