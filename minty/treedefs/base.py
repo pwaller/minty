@@ -1,7 +1,10 @@
+from logging import getLogger; log = getLogger("minty.treedefs")
+
+from math import tanh, cosh
+
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
 from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
-from math import tanh, cosh
 
 from PhotonIDTool import PhotonIDTool
 from OQMaps import check_photon, check_electron

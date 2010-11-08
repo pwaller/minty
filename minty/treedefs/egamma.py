@@ -1,3 +1,5 @@
+from logging import getLogger; log = getLogger("minty.treedefs")
+
 from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex, 
                    Electron, Photon, TruthPhoton)
 from pytuple.readtuple import make_wrapper
