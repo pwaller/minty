@@ -192,6 +192,8 @@ class Photon(EGamma):
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
     
+    EF_matchPass = TI.int
+    
     oq_function = check_photon
     
     @property

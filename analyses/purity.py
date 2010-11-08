@@ -18,10 +18,12 @@ def counts(ana, event, name, objects):
     """
            
     pv = any(v.nTracks >= 3 for v in event.vertices)
-        
+    
+    EF = event.EF
+    
     ev_cuts = (event.is_grl, pv, 
-       event.EF.g10_loose, event.EF.g20_loose, event.EF.g30_loose, event.EF.g40_loose, 
-       event.EF.2g10_loose, event.EF.2g20_loose)
+       EF.g10_loose, EF.g20_loose, EF.g30_loose, EF.g40_loose, 
+       EF.2g10_loose, EF.2g20_loose)
     
     cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
         "high_pt;isolated;nonisolated;"
@@ -156,6 +158,25 @@ def plot_objects_multi_pt(ana, name, obj):
     else:
         plot_objects_multi_cuts(ana, (name, "ptcl_lte40"), obj)
 
+def fill_trigger_object_counts(ana, event):
+    
+    EF = event.EF
+    
+    triggers = [
+        "g10_loose", "g20_loose", "g30_loose", "g40_loose",
+        "2g10_loose", "2g20_loose",
+    ]
+    
+    for trig_name in triggers:
+        triggered = getattr(EF, trig_name)
+        if not triggered:
+            continue
+        objects = getattr(EF, "%s_objects" % trig_name)
+        ana.h.get((trig_name, "obj_count"), b=[(20, 0, 20)])(len(objects))
+        
+        for obj in objects:
+            plot_objects_multi_pt(ana, ("photontrig", trig_name), obj)
+
 def plots(ana, event):
     """
     Make plots for the event
@@ -166,11 +187,10 @@ def plots(ana, event):
     pv = any(v.nTracks >= 3 for v in event.vertices)
     
     if not all((pv, event.is_grl, event.EF.g10_loose)): return
-        
+    
+    fill_trigger_object_counts(ana, event)
+    
     for ph in event.photons:
-    
-        #assert ph.robust_tight_test == ph.robust_tight
-    
         if not (ph.pass_fiducial and ph.loose and ph.good_oq): continue
         if ana.obj_selection and not ana.obj_selection(ph):
             continue

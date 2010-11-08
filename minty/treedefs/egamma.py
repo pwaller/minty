@@ -3,18 +3,27 @@ from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex,
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
 
-def egamma_wrap_tree(t):
+def get_pau_trigger_indices(t):
+    if not t.GetBranch("TriggersRun_ph"):
+        return []
+    t.GetEntry(0)
+    return list(enumerate(t.TriggersRun_ph))
 
-    if t.GetBranch("TriggersRun_ph"):
-        t.GetEntry(0)
-        g10_loose_id = list(t.TriggersRun_ph).index("g10_loose")
-        g40_loose_id = list(t.TriggersRun_ph).index("g40_loose")
-        print "got id from TriggersRun_ph"
-    else:
-        g10_loose_id = 3
-        g40_loose_id = -1
-    print "Using g10_loose id:", g10_loose_id
-    print "Using g40_loose id:", g40_loose_id
+def setup_pau_trigger_info(t, tt, Trigger):
+    
+    class PassEF(object):
+        ph = TI.int
+    tt.add_list(PassEF, "PassEF", 100, **kwargs)
+    
+    for trig_index, trig_name in get_pau_trigger_indices(t):
+        trigger_func = lambda _: tt.PassEF[trig_index].ph
+        setattr(Trigger, trig_name, trigger_func)
+        trig_bit = 0x1 << trig_index
+        trigger_objs_func = lambda _: [p for p in tt.photons 
+                                       if p.EF_matchPass & trig_bit]
+        setattr(Trigger, trig_name + "_objects", trigger_objs_func)
+
+def egamma_wrap_tree(t):
     
     leafset = set(l.GetName() for l in t.GetListOfLeaves())
     
@@ -28,19 +37,14 @@ def egamma_wrap_tree(t):
     
     tt.add(Global)
     
-    if selarg.tuple_type == "pau":
-        class PassEF(object):
-            ph = TI.int
-        tt.add_list(PassEF, "PassEF", 25, **kwargs)
-        Trigger.g10_loose = property(lambda _: tt.PassEF[g10_loose_id].ph)
-        if g40_loose_id < 0:
-            # Never pass!
-            Trigger.g40_loose = False
-        else:
-            Trigger.g40_loose = property(lambda _: tt.PassEF[g40_loose_id].ph)
+    if selarg.tuple_type == "pau":   
+       setup_pau_trigger_info(t, tt, Trigger)
     
     tt.add(Trigger, "EF", **kwargs)
-    tt.add(Trigger, "L2", **kwargs)
+    
+    # Note that the L2 code is currently broken since we modify the `Trigger`
+    # class for PAU.
+    # tt.add(Trigger, "L2", **kwargs)
     
     tt.add_list(Vertex,      "vertices",      300, **kwargs)
     

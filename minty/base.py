@@ -89,7 +89,7 @@ class AnalysisBase(object):
             self.exception_count += 1
             if self.exception_count > self.options.max_exception_count:
                 raise RuntimeError("Encountered more than `max_exception_count`"
-                                   " exceptions. Aborting."
+                                   " exceptions. Aborting.")
         
     def run(self):
         events = min(self.input_tree.tree.GetEntries(), self.options.limit)
