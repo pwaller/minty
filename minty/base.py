@@ -1,12 +1,14 @@
 from __future__ import with_statement
 
+from logging import getLogger; log = getLogger("minty.base")
+
+import ROOT as R
+
 from minty.utils import timer, event_cache
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
 from minty.metadata import TallyManager
 from minty.treedefs.egamma import egamma_wrap_tree
-
-from logging import getLogger; log = getLogger("minty.base")
 
 class DropEvent(Exception):
     pass
@@ -29,6 +31,7 @@ class AnalysisBase(object):
         self.setup_grl(options)
         self.setup_objects()
         
+        self.result_name = options.output
         self.histogram_manager = self.h = HistogramManager(options.output)
         self.tally_manager = TallyManager()
         
@@ -58,13 +61,13 @@ class AnalysisBase(object):
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
     
-    def write_parameter(name, type_, value):
-        param = R.TParameter(type_)(name, value)
+    def write_parameter(self, name, value):
+        param = R.TParameter(type(value))(name, value)
         param.Write()
     
     def finalize(self):
-        log.info("Writing to %s" % self.resultname)
-        f = R.TFile(self.resultname, "recreate")
+        log.info("Writing to %s" % self.result_name)
+        f = R.TFile(self.result_name, "recreate")
         
         self.histogram_manager.finalize()
         self.write_parameter("exception_count", self.exception_count)

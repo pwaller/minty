@@ -1,8 +1,9 @@
 from array import array
 
+from logging import getLogger; log = getLogger("minty.histograms.manager")
+
 import ROOT as R
 
-from logging import getLogger; log = getLogger("minty.histograms.manager")
 
 AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
 
