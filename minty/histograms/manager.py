@@ -106,10 +106,7 @@ class HistogramManager(object):
         R.TH1.AddDirectory(False)
     
     def finalize(self):
-        log.info("Writing to %s" % self.resultname)
-        f = R.TFile(self.resultname, "recreate")
         self.save()
-        f.Close()
 
     def save(self):
         """

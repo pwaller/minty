@@ -32,6 +32,8 @@ class AnalysisBase(object):
         self.histogram_manager = self.h = HistogramManager(options.output)
         self.tally_manager = TallyManager()
         
+        self.exception_count = 0
+        
         # TODO
         #self.tally_manager.count("runlumi", (Run, LumiNum))
         
@@ -56,8 +58,19 @@ class AnalysisBase(object):
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
     
+    def write_parameter(name, type_, value):
+        param = R.TParameter(type_)(name, value)
+        param.Write()
+    
     def finalize(self):
+        log.info("Writing to %s" % self.resultname)
+        f = R.TFile(self.resultname, "recreate")
+        
         self.histogram_manager.finalize()
+        self.write_parameter("exception_count", self.exception_count)
+                
+        f.Close()
+        
         #self.tally_manager.finalize()
         
     def event(self, idx, event):
@@ -73,6 +86,10 @@ class AnalysisBase(object):
         except:
             rlum = event.RunNumber, event.LumiBlock, event.index
             log.exception("Exception encountered in (run, lb, idx) = %r", rlum)
+            self.exception_count += 1
+            if self.exception_count > self.options.max_exception_count:
+                raise RuntimeError("Encountered more than `max_exception_count`"
+                                   " exceptions. Aborting."
         
     def run(self):
         events = min(self.input_tree.tree.GetEntries(), self.options.limit)
