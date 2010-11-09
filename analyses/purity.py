@@ -12,7 +12,7 @@ from minty.treedefs.egamma import Photon, Electron
 
 from math import cosh
 
-def counts(ana, event, name, objects):
+def counts(ana, event):
     """
     Fill a sparse histogram for counting cuts (allows one
     """
@@ -25,22 +25,30 @@ def counts(ana, event, name, objects):
        EF.g10_loose, EF.g20_loose, EF.g30_loose, EF.g40_loose, 
        EF._2g10_loose, EF._2g20_loose)
     
-    cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
-        "high_pt;isolated;nonisolated;"
-        "fiducial;oq;"
-        # Event-wise:
+    ev_cuts_string = (
         "grl;pv;"
         # Trigger:
         "g10_loose;g20_loose;g30_loose;g40_loose;"
         "2g10_loose;2g20_loose")
+    
+    cut_binning = ((2, 0, 2),) * len(ev_cuts_string.split(";"))
+    fill_ev_counts = ana.h.get("event_counts", b=cut_binning, 
+                            t="Event counts passing cuts;%s;" % (name, ev_cuts_string))
+
+    fill_ev_counts(*ev_cuts)
+          
+    cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
+        "high_pt;isolated;nonisolated;"
+        "fiducial;oq;isConv;"
+        ) + ev_cuts_string
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
     fill_counts = ana.h.get(name, "counts", b=cut_binning, 
                             t="%s counts passing cuts;%s;" % (name, cuts))
     
-    for o in objects:
+    for o in event.photons:
         fill_counts(o.loose, o.nontight, o.tight, o.robust_nontight, o.robust_tight, 
                     o.high_pt, o.isolated, o.nonisolated,
-                    o.pass_fiducial, o.good_oq, 
+                    o.pass_fiducial, o.good_oq, o.isConv,
                     *ev_cuts)
 
 TITLE_SMEAR = "p_{T} smearing matrix;Truth p_{T} [MeV];Measured p_{T} [MeV]"
@@ -221,7 +229,7 @@ class PurityAnalysis(AnalysisBase):
         
         # Tasks to run in order
         self.tasks.extend([
-            lambda a, e: counts(a, e, "photon", e.photons),
+            counts,
             plots,
         ])
         
@@ -237,5 +245,3 @@ class PurityAnalysis(AnalysisBase):
 
 if __name__ == "__main__":
     main(PurityAnalysis)
-    
-    
