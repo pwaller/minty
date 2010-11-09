@@ -33,7 +33,7 @@ def counts(ana, event):
     
     cut_binning = ((2, 0, 2),) * len(ev_cuts_string.split(";"))
     fill_ev_counts = ana.h.get("event_counts", b=cut_binning, 
-                            t="Event counts passing cuts;%s;" % (name, ev_cuts_string))
+                            t="Event counts passing cuts;%s;" % ev_cuts_string)
 
     fill_ev_counts(*ev_cuts)
           
@@ -42,8 +42,8 @@ def counts(ana, event):
         "fiducial;oq;isConv;"
         ) + ev_cuts_string
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
-    fill_counts = ana.h.get(name, "counts", b=cut_binning, 
-                            t="%s counts passing cuts;%s;" % (name, cuts))
+    fill_counts = ana.h.get("photon_counts", b=cut_binning, 
+                            t="Photon counts passing cuts;%s;" % cuts)
     
     for o in event.photons:
         fill_counts(o.loose, o.nontight, o.tight, o.robust_nontight, o.robust_tight, 
