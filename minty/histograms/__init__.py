@@ -43,8 +43,11 @@ def scale_bins(bins, factor):
     return ("var",) + tuple(map(scale, bins))
 
 def fixup_hist_units(orig_hist):
-    hist = histaxes_mev_to_gev(orig_hist)
-    hist = meaningful_yaxis(hist)
+    if "[MeV]" in orig_hist.GetXaxis().GetTitle():
+        hist = histaxes_mev_to_gev(orig_hist)
+        hist = meaningful_yaxis(hist)
+    else:
+        hist = orig_hist
     return hist
 
 unit_re = re.compile(r"(\[[^\]]+\])")

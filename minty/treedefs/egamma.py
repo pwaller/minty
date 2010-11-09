@@ -17,7 +17,9 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
         ph = TI.int
     tt.add_list(PassEF, "PassEF", 100, **kwargs)
     
+    log.info("Photon trigger indices:")
     for trig_index, trig_name in get_pau_trigger_indices(t):
+        log.info("  %2i = %s", trig_index, trig_name)
         if trig_name[0].isdigit():
             trig_name = "_" + trig_name
     
