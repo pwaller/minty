@@ -180,7 +180,8 @@ def fill_trigger_object_counts(ana, event):
         if not triggered:
             continue
         objects = getattr(EF, "%s_objects" % trig_name)
-        ana.h.get((trig_name, "obj_count"), b=[(20, 0, 20)])(len(objects))
+        ana.h.get(("photon_count_trigphot", trig_name), b=[(20, 0, 20)])(len(objects))
+        ana.h.get(("photon_count_allphot",  trig_name), b=[(20, 0, 20)])(len(event.photons))
         
         for i, obj in enumerate(objects):
             if not i:
