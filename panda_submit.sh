@@ -7,7 +7,7 @@ BADFILES=$(find . -wholename "*/.git/*" -or -iname "*.eps" -or -iname "*.png" |
 
 BADFILES=.git,\*.png,\*.eps
 
-PASS=10
+PASS=11
 
 echo {A..I} |
 tr ' ' $'\n' | 
@@ -23,5 +23,6 @@ xargs -I{} -n1 -P8 prun                                                         
     --exec './run_analysis.py analyses.purity PurityAnalysis -Ggrls/official inputs.txt' \
     --tmpDir /tmp/pwaller/pass.$PASS.period{}/                                 \
     --excludedSite=ANALY_GRIF-LPNHE \
+    --excludedSite=ANALY_INFN-MILANO-ATLASC \
     --athenaTag=16.0.0                                                           \
     $@ 
