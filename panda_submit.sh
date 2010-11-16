@@ -22,6 +22,5 @@ xargs -I{} -n1 -P10 prun                                                        
     --extFile=$(ls minty/external/OQMaps/*.root | xargs echo | sed 's/ /,/g') \
     --exec './run_analysis.py analyses.purity PurityAnalysis -Ggrls/official inputs.txt' \
     --tmpDir /tmp/pwaller/pass.$PASS.period{}/                                 \
-    --site=ANALY_TOKYO \
     --athenaTag=16.0.0                                                           \
     $@ 
