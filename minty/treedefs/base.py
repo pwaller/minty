@@ -134,7 +134,7 @@ class EGamma(Particle):
         
     @property
     def high_pt(self):
-        return self.pt > 40000
+        return self.cl.pt > 40000
         
     @property
     def isolated(self):

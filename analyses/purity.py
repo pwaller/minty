@@ -23,13 +23,13 @@ def counts(ana, event):
     
     ev_cuts = (event.is_grl, pv, 
        EF.g10_loose, EF.g20_loose, EF.g30_loose, EF.g40_loose, 
-       EF._2g10_loose, EF._2g20_loose)
+       EF._2g10_loose, EF._2g15_loose, EF._2g20_loose)
     
     ev_cuts_string = (
         "grl;pv;"
         # Trigger:
         "g10_loose;g20_loose;g30_loose;g40_loose;"
-        "2g10_loose;2g20_loose")
+        "2g10_loose;2g15_loose;2g20_loose")
     
     cut_binning = ((2, 0, 2),) * len(ev_cuts_string.split(";"))
     fill_ev_counts = ana.h.get("event_counts", b=cut_binning, 
@@ -38,7 +38,7 @@ def counts(ana, event):
     fill_ev_counts(*ev_cuts)
           
     cuts = ("loose;nontight;tight;robust_nontight;robust_tight;"
-        "high_pt;isolated;nonisolated;"
+        "high_pt;pt_gt100;isolated;nonisolated;"
         "fiducial;oq;isConv;"
         ) + ev_cuts_string
     cut_binning = ((2, 0, 2),) * len(cuts.split(";"))
@@ -47,7 +47,7 @@ def counts(ana, event):
     
     for o in event.photons:
         fill_counts(o.loose, o.nontight, o.tight, o.robust_nontight, o.robust_tight, 
-                    o.high_pt, o.isolated, o.nonisolated,
+                    o.high_pt, o.cl.pt > 100000, o.isolated, o.nonisolated,
                     o.pass_fiducial, o.good_oq, o.isConv,
                     *ev_cuts)
 
@@ -161,7 +161,9 @@ def plot_objects_multi_cuts(ana, name, obj):
 def plot_objects_multi_pt(ana, name, obj):
     plot_objects_multi_cuts(ana, (name, "ptcl_all"), obj)
     
-    if obj.cl.pt > 40000:
+    if obj.cl.pt > 100000:
+        plot_objects_multi_cuts(ana, (name, "ptcl_gt100"), obj)
+    elif obj.cl.pt > 40000:
         plot_objects_multi_cuts(ana, (name, "ptcl_gt40"), obj)
     else:
         plot_objects_multi_cuts(ana, (name, "ptcl_lte40"), obj)
