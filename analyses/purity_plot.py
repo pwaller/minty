@@ -5,7 +5,7 @@ from ROOT import TFile, gROOT, gStyle
 
 import minty
 from minty.utils import canvas
-import minty.histograms.clever_stack as C
+import minty.histograms.better_stack as C
 from minty.histograms.manager import expand_hname
 from minty.histograms import fixup_hist_units
 
@@ -210,21 +210,25 @@ def showershapes(ht):
                  "rphi", "wstot", "ws3", "et"]:
         
         plot("shower_vstight", "%s vs tightness" % what, what, 
-             ptall.loose, ptall.nontight, ptall.rtight, logy=True, 
+             ptall.loose, ptall.nontight, ptall.rtight, logy=False, 
              pos=positioning.get(what, "RT"), normalize=True)
              
     for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected"]:
-        
         plot("shower_etconeshape", "%s vs tightness" % what, what, 
              ptall.loose, ptall.nontight, ptall.rtight, logy=False, normalize=5,
+             pos=positioning.get(what, "RT"))
+             
+    for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected"]:
+        plot("shower_etconeshape_norm10", "%s vs tightness" % what, what, 
+             ptall.loose, ptall.nontight, ptall.rtight, logy=False, normalize=10,
              pos=positioning.get(what, "RT"))
 
     for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected", 
                  "Rhad", "Rhad1", "DeltaE", "Eratio", "etas2", "fside", "reta", 
                  "rphi", "wstot", "ws3", "et"]:
         plot("shower_tight_vspt", "%s vs pt" % what, what, 
-             ht.ptcl_gt40.rtight, ht.ptcl_lte40.rtight, logy=True, 
-             pos=positioning.get(what, "RT"), fallthrough=1, normalize=True)
+             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, logy=False, 
+             pos=positioning.get(what, "RT"), fallthrough=1, normalize=10)
 
 def main(argv):
     setup_style()
