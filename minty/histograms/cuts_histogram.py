@@ -46,6 +46,8 @@ class CutAxis(object):
     def project_out(self, *slices):
         """
         Remove this axis from the target histogram
+        
+        If `slices` is not specified, take the "True"*Ndims bin
         """
         # Keep track of previous axis states before projection
         set_axes = [] 
@@ -83,6 +85,10 @@ class CutAxis(object):
     @property
     def axes(self):
         return map(self.cuthisto.axis, self.titles)
+        
+    @property
+    def axes_objs(self):
+        return [self.cuthisto(axis) for axis in self.titles]
     
     @property
     def idxs(self):
@@ -99,6 +105,10 @@ class CutAxis(object):
     @property
     def false(self):
         return self.projected[self.find_bin(*(False,)*len(self.titles))]
+    
+    @property
+    def total(self):
+        return self.true + self.false
     
     def __repr__(self):
         args = self.titles, self.false, self.true
@@ -139,7 +149,11 @@ class CutHistogram(object):
     
     def __call__(self, *what):
         return CutAxis(self, *what)
-        
+    
+    @property
+    def axes_objs(self):
+        return [self(i) for i in self.axes]
+    
     def axis_idx(self, title):
         return self.axis_idxs[title]
     
@@ -148,7 +162,7 @@ class CutHistogram(object):
     
     def __getitem__(self, what):
         return self.hist.GetBinContent(what)
-    
+        
     def project(self, *axes):
         assert len(axes) < len(self.axes)
         #print "Projecting axes:", axes, [self.hist.GetAxis(i).GetTitle() for i in axes]
