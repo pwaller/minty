@@ -7,7 +7,7 @@ BADFILES=$(find . -wholename "*/.git/*" -or -iname "*.eps" -or -iname "*.png" |
 
 BADFILES=.git,\*.png,\*.eps,.hg
 
-PASS=12
+PASS=13
 
 echo {A..I} |
 tr ' ' $'\n' | 
