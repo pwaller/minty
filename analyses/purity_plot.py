@@ -187,14 +187,12 @@ def setup_style():
     gStyle.SetPalette(1)
 
 def plot_trigger_object_counts(ht):
+    c = ht.photon.count.allphot
+    objcounts = c.g10, c.g20, c.g30, c.g40
+    objcounts[0].loose.GetXaxis().SetTitle("Number of photons causing trigger")
     
-    objcounts = ht.g10_loose, ht.g20_loose, ht.g30_loose, ht.g40_loose
-    objcounts = [htpart.obj for htpart in objcounts]
-    print objcounts[0].count
-    objcounts[0].count.GetXaxis().SetTitle("Number of photons causing trigger")
-    
-    plot("trig_objcounts", "Trigger object counts", "count",
-         fallthrough=2, logy=True, *objcounts)
+    plot("trig_objcounts", "Trigger object counts", "loose",
+         logy=True, *objcounts)
 
 def showershapes(ht):
 
@@ -230,9 +228,16 @@ def showershapes(ht):
     for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected", 
                  "Rhad", "Rhad1", "DeltaE", "Eratio", "etas2", "fside", "reta", 
                  "rphi", "wstot", "ws3", "et"]:
+        
+        norm = True if not what.startswith("EtCone") else 10
+                 
         plot("shower_tight_vspt", "%s vs pt" % what, what, 
-             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, logy=False, 
-             pos=positioning.get(what, "RT"), fallthrough=1, normalize=10)
+             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, ht.ptcl_gt100.rtight, logy=False,
+             pos=positioning.get(what, "RT"), fallthrough=1, normalize=norm)
+             
+        plot("shower_tight_vspt_log", "%s vs pt" % what, what,
+             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, ht.ptcl_gt100.rtight, logy=True,
+             pos=positioning.get(what, "RT"), fallthrough=1, normalize=norm)
 
 def main(argv):
     setup_style()
