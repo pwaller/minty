@@ -144,6 +144,7 @@ def make_lots_of_plots(ph):
     allpt = ph.ptcl.all
     lopt = ph.ptcl.lte40
     hipt = ph.ptcl.gt40
+    vhipt = ph.ptcl.gt100
     
     for logy in [True, False]:
         for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected", 
@@ -160,6 +161,9 @@ def make_lots_of_plots(ph):
                              
             plot("shower_%s_pt_hipt" % n, "%s vs tightness (p_{T} > 40GeV)" % what, what,
                  hipt.loose, hipt.nontight, hipt.rtight, logy=logy)
+                 
+            plot("shower_%s_pt_vhipt" % n, "%s vs tightness (p_{T} > 100GeV)" % what, what,
+                 vhipt.loose, vhipt.nontight, vhipt.rtight, logy=logy)
             
             plot("shower_%s_pt_lovshi_tight" % n, "%s vs p_{T}" % what, what,
                  lopt.rtight, hipt.rtight, fallthrough=1, logy=logy)
