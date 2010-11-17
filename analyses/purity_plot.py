@@ -113,6 +113,7 @@ def plot(name, title, variable, *tree_parts, **kwargs):
     logy = kwargs.pop("logy", None)
     normalize = kwargs.pop("normalize", None)
     pos = kwargs.pop("pos", "RT")
+    x_range = kwargs.pop("x_range", None)
 
     with canvas() as c:
         if logy: c.SetLogy()
@@ -132,6 +133,8 @@ def plot(name, title, variable, *tree_parts, **kwargs):
                 
         hs = [(h, None, hname) for hname, h in namehs]
         sl = C.StackLegend(name, pos, title, *hs)
+        if x_range is not None:
+            sl.set_x_range(x_range)
         sl.Draw()
         name = "_".join(expand_hname(name, variable))
         c.SaveAs("plots/purity/%s.eps" % name)

@@ -141,7 +141,11 @@ class StackLegend(object):
         
     def __repr__(self):
         return "<StackLegend name='%s' nHists=%i>" % (self.name, len(self.hists))
-        
+    
+    def set_x_range(self, x_range):
+        lo, hi = x_range
+        self.X.SetRange(self.X.FindBin(lo), self.X.FindBin(hi))
+    
     @property
     def X(self): return self.stack.GetXaxis()
     @property
