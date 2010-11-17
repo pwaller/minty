@@ -119,9 +119,9 @@ def plot_isolation(ana, name, obj):
     hget(name, "EtCone30",  b=[(100, -5000, 50000)], t=";E_{T}^{cone30} [MeV]")(obj.EtCone30)
     hget(name, "EtCone40",  b=[(100, -5000, 50000)], t=";E_{T}^{cone40} [MeV]")(obj.EtCone40)
     
-    hget(name, "EtCone20_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone20 (corected)} [MeV]")(obj.EtCone20_corrected)
-    hget(name, "EtCone30_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone30 (corected)} [MeV]")(obj.EtCone30_corrected)
-    hget(name, "EtCone40_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone40 (corected)} [MeV]")(obj.EtCone40_corrected)
+    hget(name, "EtCone20_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone20 (corrected)} [MeV]")(obj.EtCone20_corrected)
+    hget(name, "EtCone30_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone30 (corrected)} [MeV]")(obj.EtCone30_corrected)
+    hget(name, "EtCone40_corrected",  b=[(100, -5000, 50000)], t=";E_{T}^{cone40 (corrected)} [MeV]")(obj.EtCone40_corrected)
 
 
 def plot_object(ana, name, obj):
