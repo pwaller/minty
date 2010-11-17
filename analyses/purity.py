@@ -101,9 +101,9 @@ def plot_isolation(ana, name, obj):
     hget = ana.h.get
     
     hget(name, "et",        b=[ana.ptbins],     t=";E_{T} [MeV]"        )(obj.et)
-    hget(name, "etas2",     b=[ana.etabins],    t=";#eta_{s2} [MeV]"    )(obj.etas2)
+    hget(name, "etas2",     b=[ana.etabins],    t=";#eta_{s2}"    )(obj.etas2)
     hget(name, "Rhad",      b=[(100, -0.5, 0.75)],   t=";raphad"             )(obj.Rhad)
-    hget(name, "Rhad1",     b=[(100, -0.5, 0.75)],   t=";raphad1"            )(obj.Rhad1)
+    hget(name, "Rhad1",     b=[(100, -0.1, 0.10)],   t=";raphad1"            )(obj.Rhad1)
     
     hget(name, "reta",      b=[(20, 0.9, 1)] ,  t=";R_{#eta}"           )(obj.reta)
     hget(name, "rphi",      b=[(15, 0.8, 1)],   t=";R_{#phi}"           )(obj.rphi)
@@ -112,7 +112,7 @@ def plot_isolation(ana, name, obj):
     hget(name, "DeltaE",    b=[(15, 0, 500)],   t=";#DeltaE [MeV]"      )(obj.deltaE)
     
     hget(name, "wstot",     b=[(15, 0, 5)],     t=";wstot"              )(obj.wstot)
-    hget(name, "ws3",       b=[(15, 0, 5)],     t=";w_{s3}"    )(obj.ws3)
+    hget(name, "ws3",       b=[(15, 0, 1)],     t=";w_{s3}"    )(obj.ws3)
     hget(name, "fside",     b=[(20, 0, 1.25)],  t=";F_{side}"    )(obj.fside)
     
     hget(name, "EtCone20",  b=[(100, -5000, 50000)], t=";E_{T}^{cone20} [MeV]")(obj.EtCone20)
