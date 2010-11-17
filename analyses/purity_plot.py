@@ -199,48 +199,57 @@ def plot_trigger_object_counts(ht):
 
 def showershapes(ht):
 
-    #positioning = dict(
-        #Et
+    etcone_vars = ["EtCone20", "EtCone30", "EtCone40",
+        "EtCone20_corrected", "EtCone30_corrected", "EtCone40_corrected"]
+        
+    variables = etcone_vars + ["Rhad", "Rhad1", "DeltaE", "Eratio", "etas2", 
+                               "fside", "reta", "rphi", "wstot", "ws3", "et"]
+    
     positioning = dict(
-        Eratio="RB",
+        Eratio="LT",
         etas2="CB",
         reta="CB",
         rphi="LT",
-        wstot="LB",
-    )   
+        wstot="RT",
+        ws3="LT",
+    )
+    
+    ranges = dict(
+        Rhad=(-0.1, 0.1),
+        Rhad1=(-0.02, 0.02),
+    )
     
     ptall = ht.ptcl_all
-    for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected", 
-                 "Rhad", "Rhad1", "DeltaE", "Eratio", "etas2", "fside", "reta", 
-                 "rphi", "wstot", "ws3", "et"]:
-        
-        plot("shower_vstight", "%s vs tightness" % what, what, 
-             ptall.loose, ptall.nontight, ptall.rtight, logy=False, 
-             pos=positioning.get(what, "RT"), normalize=True)
              
-    for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected"]:
-        plot("shower_etconeshape", "%s vs tightness" % what, what, 
+    for var in etcone_vars:
+        plot("shower_etconeshape", "%s vs tightness" % var, var, 
              ptall.loose, ptall.nontight, ptall.rtight, logy=False, normalize=5,
-             pos=positioning.get(what, "RT"))
+             pos=positioning.get(var, "RT"))
              
-    for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected"]:
-        plot("shower_etconeshape_norm10", "%s vs tightness" % what, what, 
+        plot("shower_etconeshape_norm10", "%s vs tightness" % var, var, 
              ptall.loose, ptall.nontight, ptall.rtight, logy=False, normalize=10,
-             pos=positioning.get(what, "RT"))
+             pos=positioning.get(var, "RT"))
 
-    for what in ["EtCone20", "EtCone30", "EtCone40", "EtCone40_corrected", 
-                 "Rhad", "Rhad1", "DeltaE", "Eratio", "etas2", "fside", "reta", 
-                 "rphi", "wstot", "ws3", "et"]:
-        
-        norm = True if not what.startswith("EtCone") else 10
-                 
-        plot("shower_tight_vspt", "%s vs pt" % what, what, 
-             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, ht.ptcl_gt100.rtight, logy=False,
-             pos=positioning.get(what, "RT"), fallthrough=1, normalize=norm)
+    for var in variables:
+        plot("shower_vstight", "%s vs tightness" % var, var, 
+             ptall.loose, ptall.nontight, ptall.rtight, logy=False, 
+             pos=positioning.get(var, "RT"), normalize=True)
              
-        plot("shower_tight_vspt_log", "%s vs pt" % what, what,
-             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, ht.ptcl_gt100.rtight, logy=True,
-             pos=positioning.get(what, "RT"), fallthrough=1, normalize=norm)
+    for var in variables:
+        
+        var_hist_params = dict(
+            normalize=True if not var.startswith("EtCone") else 10,
+            pos=positioning.get(var, "RT"),
+            x_range=ranges.get(var),
+        )
+                 
+        plot("shower_tight_vspt_lin", "%s vs pt" % var, var, 
+             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, ht.ptcl_gt100.rtight, 
+             logy=False, fallthrough=1, **var_hist_params)
+             
+        plot("shower_tight_vspt_log", "%s vs pt" % var, var,
+             ht.ptcl_lte40.rtight, ht.ptcl_gt40.rtight, ht.ptcl_gt100.rtight, 
+             logy=True, fallthrough=1, **var_hist_params)
 
 def main(argv):
     setup_style()
