@@ -123,3 +123,16 @@ def event_loop(function, tree, *args, **kwargs):
     duration = time() - start
     print "Events processed:", Nevents
     print "Took %.3fs, (%.3f / sec)" % (duration, Nevents / duration)        
+
+def comma_num(x):
+    if x < 0: return "-" + comma_num(-x)
+    parts = []
+    while x >= 1000:
+        x, r = divmod(x, 1000)
+        if r % 1:
+            parts.append("%06.2f" % r)
+        else:
+            parts.append("%03i" % r)
+    
+    front = "%3f" % x if x % 1 else str(int(x))
+    return ",".join(([front] if x or not parts else []) + list(reversed(parts)))
