@@ -40,19 +40,16 @@ def canvas(*args):
     finally:
         if old_canvas and getattr(old_canvas, "cd", None):
             old_canvas.cd()
-        
-        
 
 def init_root():
     """
     Make ROOT init happen without it having argv, so it doesn't catch --help
     Also stop stupid duplicate warnings.
     """
-    if False:
-        from DQUtils.ext.silence import silence_sout_serr
-        import sys
-        with silence_sout_serr(lambda s: "duplicate entry" in s):
-            oldargv = sys.argv; sys.argv = []; R.kTRUE; sys.argv = oldargv
+    from .silence import silence_sout_serr
+    import sys
+    with silence_sout_serr(lambda s: "duplicate entry" in s or "Bool" in s):
+        oldargv = sys.argv; sys.argv = []; R.kTRUE; sys.argv = oldargv
     
     # Help ROOT's memory management
     creating_functions = [
