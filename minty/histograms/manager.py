@@ -5,8 +5,6 @@ from logging import getLogger; log = getLogger("minty.histograms.manager")
 import ROOT as R
 
 
-AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
-
 def make_sparse_hist_filler(hist):
     dimensions = hist.GetNdimensions()
     def filler(*args, **kwargs):
@@ -40,6 +38,7 @@ def build_histogram_plain(name, title, binning):
     TH = {1: R.TH1F, 2: R.TH2F, 3: R.TH3F}[dimensions]
     binning_args, fixup_axes = [], []
     
+    AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
     for bins, axis_getter in zip(binning, AXES_GETTERS):
         if len(bins) == 3:
             binning_args.extend(bins)

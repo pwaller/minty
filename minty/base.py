@@ -4,11 +4,18 @@ from logging import getLogger; log = getLogger("minty.base")
 
 import ROOT as R
 
+print "Doing minty imports"
+print "  utils"
 from minty.utils import timer, event_cache
+print "  grl"
 from minty.utils.grl import GRL, FakeGRL
+print "  hm"
 from minty.histograms import HistogramManager
+print "  meta"
 from minty.metadata import TallyManager
+print "  tree"
 from minty.treedefs.egamma import egamma_wrap_tree
+print "Done minty imports"
 
 class DropEvent(Exception):
     pass

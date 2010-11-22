@@ -1,12 +1,15 @@
-
+print "In options"
 from optparse import OptionParser
-from .utils import make_chain
 from os import listdir
 from os.path import isdir, isfile
 from sys import stderr
 from pprint import pformat
 
 from logging import getLogger; log = getLogger("minty.options")
+
+print "Importing utils from options"
+from .utils import make_chain
+print "Out of options imports"
 
 def load_files(files):
     

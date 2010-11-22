@@ -1,5 +1,7 @@
 from __future__ import with_statement
 
+print "In utils"
+
 import ROOT as R
 
 from contextlib import contextmanager
@@ -7,6 +9,7 @@ from time import time
 
 from logging import getLogger
 
+print "Finished utils imports"
 from .event_cache import event_cache
 
 time_logger = getLogger("minty.utils.timer")
@@ -60,13 +63,8 @@ def init_root():
     
     R.TH1.SetDefaultSumw2()
     R.gStyle.SetPalette(1)
-init_root()
 
 exiting = False
-@R.TPyDispatcher
-def count_canvases():
-    if not exiting and not get_visible_canvases():
-        R.gApplication.Terminate()
 
 def get_visible_canvases():
     return [c for c in R.gROOT.GetListOfCanvases() if not c.IsBatch()]
@@ -82,6 +80,11 @@ def wait_for_zero_canvases():
     
     visible_canvases = get_visible_canvases()
     
+    @R.TPyDispatcher
+    def count_canvases():
+        if not exiting and not get_visible_canvases():
+            R.gApplication.Terminate()
+            
     for canvas in visible_canvases:
         if not getattr(canvas, "_py_close_dispatcher_attached", False):
             canvas._py_close_dispatcher_attached = True

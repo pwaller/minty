@@ -17,3 +17,5 @@ def run(Analysis):
         
     analysis = Analysis(input_tree, options)
     analysis.run()
+    
+print "Finished importing main"
