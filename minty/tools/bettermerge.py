@@ -226,7 +226,7 @@ def merge_files(output_filename, input_filenames):
     finally:
         directory_merger.finish()
 
-def main(argv):
+def main():
 
     parser = OptionParser()
     parser.add_option("-o", "--outfile", default="merged.root",
