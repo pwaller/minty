@@ -44,13 +44,14 @@ def format_num(num):
         
     return str(num)
 
-def get_max_width(table, index):
+def compute_col_paddings(table):
     """Get the maximum width of the given column index
     """
     
-    return max([len(format_num(row[index])) for row in table])
+    columns = zip(*table)    
+    return [max(len(format_num(cell)) for cell in row) for row in columns]
 
-def pprint_table_to(out, table, header_loc=1):
+def pprint_table_to(out, table, header_loc=1, col_paddings=None):
     """Prints out a table of data, padded for alignment
     
     @param out: Output stream ("file-like object")
@@ -59,29 +60,29 @@ def pprint_table_to(out, table, header_loc=1):
     
     """
 
-    col_paddings = []
-    
-    for i in range(len(table[0])):
-        col_paddings.append(get_max_width(table, i))
+    if col_paddings is None:
+        col_paddings = compute_col_paddings(table)        
 
     for i, row in enumerate(table):
         if i == header_loc:
             print >> out, "-" * (sum(col_paddings) + (len(col_paddings)*3-1))
-        # left col
-        print >> out, row[0].ljust(col_paddings[0] + 2),
-        # rest of the cols
-        for i in range(1, len(row)):
-            col = format_num(row[i]).rjust(col_paddings[i] + 2)
-            print >> out, col,
+        for i, (cell, padding) in enumerate(zip(row, col_paddings)):
+            padding += 2
+            first_row = not i
+            if callable(cell):
+                cell = cell(padding, first_row)
+            cell = format_num(cell)
+            just = str.ljust if first_row else str.rjust
+            print >>out, just(cell, padding),
         print >> out
 
-def pprint_table(table, header_loc=1):
-    pprint_table_to(sys.stdout, table, header_loc)
+def pprint_table(table, header_loc=1, col_paddings=None):
+    pprint_table_to(sys.stdout, table, header_loc, col_paddings=col_paddings)
 
-def pprint_table_string(table, header_loc=1):
+def pprint_table_string(table, header_loc=1, col_paddings=None):
     from cStringIO import StringIO
     sio = StringIO()
-    pprint_table_to(sio, table, header_loc)
+    pprint_table_to(sio, table, header_loc, col_paddings=col_paddings)
     return sio.getvalue()
     
 if __name__ == "__main__":
