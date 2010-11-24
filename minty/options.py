@@ -1,4 +1,3 @@
-print "In options"
 from optparse import OptionParser
 from os import listdir
 from os.path import isdir, isfile
@@ -7,12 +6,8 @@ from pprint import pformat
 
 from logging import getLogger; log = getLogger("minty.options")
 
-print "Importing utils from options"
-from .utils import make_chain
-print "Out of options imports"
 
 def load_files(files):
-    
     actual_files = []
     using_comma_workaround = using_newline_workaround = False
     for filename in files:
@@ -69,5 +64,5 @@ def parse_options(argv):
         log.info("[skipped %i filenames]" % (len(actual_files) - 20))
         log.info(pformat(actual_files[-10:]))
         
-    
+    from .utils import make_chain
     return options, make_chain(actual_files)

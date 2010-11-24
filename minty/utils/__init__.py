@@ -1,7 +1,5 @@
 from __future__ import with_statement
 
-print "In utils"
-
 import ROOT as R
 
 from contextlib import contextmanager
@@ -9,8 +7,8 @@ from time import time
 
 from logging import getLogger
 
-print "Finished utils imports"
 from .event_cache import event_cache
+
 
 time_logger = getLogger("minty.utils.timer")
 @contextmanager
