@@ -7,7 +7,7 @@ from AthenaPython import PyAthena
 
 import ROOT as R
 
-from minty.utils import timer
+from minty.utils import timer, event_cache
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import AthenaHistogramManager
 from minty.metadata import TallyManager
@@ -78,6 +78,27 @@ class AnalysisAlgorithm(PyAthena.Alg):
     def initialize(self):
         log.info("Initialize Minty")
         self.sg = PyAthena.py_svc("StoreGateSvc")
+
+    @event_cache
+    @property
+    def electrons(event):
+        return list(event.sg["ElectronAODCollection"])
+
+    @event_cache
+    @property
+    def muons(event):
+        return list(event.sg["%sMuonCollection" % event.muon_algo])
+
+    @event_cache
+    @property
+    def leptons(event):
+        return reversed(sorted(event.muons + event.electrons))
+
+    @event_cache
+    def ll(event):
+        if len(event.leptons) >= 2:
+            l1, l2 = event.leptons[:2]
+            return l1.hlv() + l2.hlv()
     
     def load_event_info(self):
         if self.event_info_key is None:
@@ -109,6 +130,8 @@ class AnalysisAlgorithm(PyAthena.Alg):
         try:
             for task in self.tasks:
                 task(self, event)
+            print event.ll.perp()
+            event_cache.invalidate()
         except DropEvent:
             pass
         except (KeyboardInterrupt, SystemExit):
