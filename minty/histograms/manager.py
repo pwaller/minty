@@ -150,3 +150,25 @@ class HistogramManager(object):
         if hname in self.filler_store:
             return self.filler_store[hname]
         return self.build_histogram(*hname, **kwargs)
+
+
+class AthenaHistogramManager(HistogramManager):
+
+    def __init__(self, resultname):
+        super(AthenaHistogramManager, self).__init__(resultname)
+        # Set up Minty histogram and ntuple service
+        from AthenaCommon import CfgMgr
+        from AthenaCommon.AppMgr import ServiceMgr
+        if not hasattr(ServiceMgr, 'MintyHistogramSvc'):
+            self.hsvc = CfgMgr.THistSvc("MintyHistogramSvc")
+            self.hsvc.Output += [ "minty DATAFILE='MINTY.root' TYP='ROOT' OPT='RECREATE'" ]
+            self.hsvc.PrintAll = False
+            ServiceMgr += self.hsvc
+        else:
+            self.hsvc = ServiceMgr.MintyHistogramSvc
+
+    def save(self):
+        nameshistos = [(h.GetName(), h) for h in self.histo_store.values()]
+        for name, histogram in sorted(nameshistos):
+            self.hsvc["/".join("minty",self.resultname, name)] = histogram
+
