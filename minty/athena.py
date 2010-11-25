@@ -72,12 +72,14 @@ class AnalysisAlgorithm(PyAthena.Alg):
         self.is_mc = None
         self.tasks = []
     
-    def write_parameter(self, name, value):
-        self.hsvc[name] = R.TParameter(type(value))(name, value)
+    def __getattr__(self, name):
+        """ This is necessary to make properties work"""
+        return object.__getattribute__(self, name)
         
     def initialize(self):
         log.info("Initialize Minty")
         self.sg = PyAthena.py_svc("StoreGateSvc")
+        return PyAthena.StatusCode.Success
 
     @event_cache
     @property
@@ -92,9 +94,10 @@ class AnalysisAlgorithm(PyAthena.Alg):
     @event_cache
     @property
     def leptons(event):
-        return reversed(sorted(event.muons + event.electrons))
+        return list(reversed(sorted(event.muons + event.electrons)))
 
     @event_cache
+    @property
     def ll(event):
         if len(event.leptons) >= 2:
             l1, l2 = event.leptons[:2]
@@ -128,9 +131,10 @@ class AnalysisAlgorithm(PyAthena.Alg):
         event.load_event_info()
 
         try:
-            for task in self.tasks:
-                task(self, event)
-            print event.ll.perp()
+            for task in event.tasks:
+                task(event)
+            if event.ll:
+                print event.ll.perp()
             event_cache.invalidate()
         except DropEvent:
             pass
@@ -139,16 +143,18 @@ class AnalysisAlgorithm(PyAthena.Alg):
         except:
             rlum = event.run_number, event.lumi_block, event.event_number
             log.exception("Exception encountered in (run, lb, nr) = %r", rlum)
-            if self.options.get("shell_on_exception", False):
+            if event.options.get("shell_on_exception", False):
                 raise
             
-            self.exception_count += 1
-            if self.exception_count > self.options.get("max_exception_count", 100):
+            event.exception_count += 1
+            if event.exception_count > event.options.get("max_exception_count", 100):
                 raise RuntimeError("Encountered more than `max_exception_count`"
                                    " exceptions. Aborting.")
+        return PyAthena.StatusCode.Success
  
     def finalize(self):
         log.info("Finalizing Minty")
         self.histogram_manager.finalize()
-        self.write_parameter("exception_count", self.exception_count)
+        self.histogram_manager.write_parameter("exception_count", self.exception_count)
+        return PyAthena.StatusCode.Success
 
