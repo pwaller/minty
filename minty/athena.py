@@ -9,7 +9,7 @@ import ROOT as R
 
 from minty.utils import timer, event_cache
 from minty.utils.grl import GRL, FakeGRL
-from minty.histograms import AthenaHistogramManager
+from minty.histograms import HistogramManager
 from minty.metadata import TallyManager
 
 def athena_setup(input = None, max_events = None):
@@ -66,7 +66,7 @@ class AnalysisAlgorithm(PyAthena.Alg):
     def __init__(self, name, options = {}):
         super(AnalysisAlgorithm,self).__init__(name)
         self.options = options
-        self.histogram_manager = self.h = AthenaHistogramManager(name)
+        self.histogram_manager = self.h = HistogramManager(name+".root")
         self.exception_count = 0
         self.event_info_key = None
         self.is_mc = None
@@ -154,7 +154,6 @@ class AnalysisAlgorithm(PyAthena.Alg):
  
     def finalize(self):
         log.info("Finalizing Minty")
+        self.histogram_manager.write_parameter("debug/exception_count", self.exception_count)
         self.histogram_manager.finalize()
-        self.histogram_manager.write_parameter("exception_count", self.exception_count)
         return PyAthena.StatusCode.Success
-
