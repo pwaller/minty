@@ -44,7 +44,7 @@ def athena_setup(input = None, max_events = None):
 
     if not input is None:
         # Set input
-        athenaCommonFlags.FilesInput = glob("/scratch/home_lucid/ebke/Data/data10_7TeV.00155112.*/*.root*")
+        athenaCommonFlags.FilesInput = input
 
     if not max_events is None:
         athenaCommonFlags.EvtMax = max_events
