@@ -71,6 +71,10 @@ class AnalysisAlgorithm(PyAthena.Alg):
         self.event_info_key = None
         self.is_mc = None
         self.tasks = []
+        if "grl_path" in options:
+            self.grl = GRL(options["grl_path"])
+        else:
+            self.grl = FakeGRL()
     
     def __getattr__(self, name):
         """ This is necessary to make properties work"""
