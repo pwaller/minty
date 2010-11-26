@@ -85,23 +85,24 @@ class AnalysisAlgorithm(PyAthena.Alg):
         self.sg = PyAthena.py_svc("StoreGateSvc")
         return PyAthena.StatusCode.Success
 
-    @event_cache
+
     @property
+    @event_cache
     def electrons(event):
         return list(event.sg["ElectronAODCollection"])
 
-    @event_cache
     @property
+    @event_cache
     def muons(event):
         return list(event.sg["%sMuonCollection" % event.muon_algo])
 
-    @event_cache
     @property
+    @event_cache
     def leptons(event):
         return list(reversed(sorted(event.muons + event.electrons)))
 
-    @event_cache
     @property
+    @event_cache
     def ll(event):
         if len(event.leptons) >= 2:
             l1, l2 = event.leptons[:2]
