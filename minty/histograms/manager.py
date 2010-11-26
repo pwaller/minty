@@ -165,7 +165,7 @@ class HistogramManager(object):
         else:
             hist, filler = build_histogram_sparse(name, title, binning)
         
-        self[hname] = hist        
+        self[name] = hist        
         self.filler_store[hname] = filler
         return filler
 
