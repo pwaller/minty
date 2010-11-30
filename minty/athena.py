@@ -83,8 +83,11 @@ class AnalysisAlgorithm(PyAthena.Alg):
     def initialize(self):
         log.info("Initialize Minty")
         self.sg = PyAthena.py_svc("StoreGateSvc")
+        self.init()
         return PyAthena.StatusCode.Success
 
+    def init(self):
+        pass
 
     @property
     @event_cache
