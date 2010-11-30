@@ -64,7 +64,6 @@ class Histo(object):
                 return
         val = list(self.value(event))
         val.extend(1.0 if cut_results[x] else 0.0 for x in self.cross)
-        print val
         self.filler(*val, w = event.event_weight)
 
 class CutGroup(object):
