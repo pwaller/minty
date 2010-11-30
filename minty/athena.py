@@ -143,14 +143,11 @@ class AnalysisAlgorithm(PyAthena.Alg):
 
     def execute(event):
         # note that "self" is named "event" here for semantic reasons
-        log.info("Executing Minty")
+        log.debug("Executing Minty")
         event.load_event_info()
-
         try:
             for task in event.tasks:
                 task(event)
-            if event.ll:
-                print event.ll.perp()
             event_cache.invalidate()
         except DropEvent:
             pass
