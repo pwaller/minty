@@ -132,6 +132,14 @@ class AnalysisAlgorithm(PyAthena.Alg):
         self.event_number = self.event_info.event_ID().event_number()
         self.run_number = self.event_info.event_ID().run_number()
         self.lumi_block = self.event_info.event_ID().lumi_block()
+        self.event_weight = 1.0
+        if self.is_mc:
+            try:
+                truth = self.sg["GEN_AOD"]
+                self.event_weight = truth[0].weights()[0]
+            except KeyError:
+                self.sg.dump()
+                raise RuntimeError("MC weight not found in StoreGate (GEN_AOD)!") 
 
     def execute(event):
         # note that "self" is named "event" here for semantic reasons
