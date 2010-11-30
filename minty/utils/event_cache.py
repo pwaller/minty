@@ -1,4 +1,15 @@
+def func_namespace(func):
+    """Generates a unique namespace for a function"""
+    kls = None
+    if hasattr(func, 'im_func'):
+        kls = func.im_class
+        func = func.im_func
 
+    if kls:
+        return '%s.%s' % (kls.__module__, kls.__name__)
+    else:
+        return '%s.%s' % (func.__module__, func.__name__)
+                                                              
 class EventCache(object):
     def __init__(self):
         self.store = {}
@@ -9,7 +20,6 @@ class EventCache(object):
         return self.store[key]
         
     def __call__(self, func):
-        return func
         namespace = (func_namespace(func),)
         def trampoline(*args):
             key = namespace + tuple(hash(x) for x in args)
