@@ -170,6 +170,6 @@ class AnalysisAlgorithm(PyAthena.Alg):
  
     def finalize(self):
         log.info("Finalizing Minty")
-        self.histogram_manager.write_parameter("debug/exception_count", self.exception_count)
+        self.histogram_manager.write_parameter("exception_count", self.exception_count)
         self.histogram_manager.finalize()
         return PyAthena.StatusCode.Success
