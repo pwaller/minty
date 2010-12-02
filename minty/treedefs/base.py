@@ -65,6 +65,8 @@ class Particle(Fourvec_PtEtaPhiE):
 
 class Trigger(object):
     g10_loose = TI.bool
+    g20_loose = TI.bool
+    g30_loose = TI.bool
     g40_loose = TI.bool
 
 class Vertex(object):
