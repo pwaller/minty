@@ -4,6 +4,11 @@ from .utils.logger import log_level
 
 from logging import DEBUG, getLogger; log = getLogger("minty.main")
 
+def make_main(Analysis):
+    def thunk():
+        return main(Analysis)
+    return thunk
+
 def main(Analysis):
     with log_level(DEBUG):
         run(Analysis)
