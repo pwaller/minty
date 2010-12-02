@@ -56,8 +56,8 @@ def egamma_wrap_tree(t):
     
     tt.add_list(Vertex,      "vertices",      300, **kwargs)
     
-    tt.add_list(Photon,      "photons",       300, **kwargs)
-    tt.add_list(Electron,    "electrons",     300, **kwargs)
-    tt.add_list(TruthPhoton, "true_photons",  300, **kwargs)
+    tt.add_list(Photon,      "photons",       400, **kwargs)
+    tt.add_list(Electron,    "electrons",     400, **kwargs)
+    tt.add_list(TruthPhoton, "true_photons",  400, **kwargs)
         
     return tt
