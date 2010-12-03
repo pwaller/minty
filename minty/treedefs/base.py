@@ -64,10 +64,7 @@ class Particle(Fourvec_PtEtaPhiE):
     "Defines an object with (pt, eta, phi, E) available)."
 
 class Trigger(object):
-    g10_loose = TI.bool
-    g20_loose = TI.bool
-    g30_loose = TI.bool
-    g40_loose = TI.bool
+    _2g15_loose = g10_loose = g20_loose = g30_loose = g40_loose = 0
 
 class Vertex(object):
     __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
