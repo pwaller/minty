@@ -234,7 +234,9 @@ def main():
     parser.add_option("-f", "--force", action="store_true",
                       help="overwrite output file if it exists. (default: no)")
 
+    from sys import argv
     options, input_filenames = parser.parse_args(argv)
+    input_filenames = input_filenames[1:]
 
     if not input_filenames:
         parser.print_help()
@@ -246,7 +248,3 @@ def main():
                            % (output_name))
                            
     merge_files(output_name, input_filenames)
-
-if __name__== "__main__":
-    from sys import argv
-    main(argv[1:])
