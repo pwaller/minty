@@ -92,6 +92,8 @@ class AnalysisBase(object):
         except DropEvent:
             pass
         except (KeyboardInterrupt, SystemExit):
+            rlum = event.RunNumber, event.LumiBlock, event.index
+            log.exception("Leaving code at (run, lb, idx) = %r", rlum)
             raise
         except:
             rlum = event.RunNumber, event.LumiBlock, event.index
