@@ -9,7 +9,7 @@ def make_sparse_hist_filler(hist):
     dimensions = hist.GetNdimensions()
     def filler(*args, **kwargs):
         w = kwargs.pop("w", 1)
-        assert len(args) == dimensions, "Filling THnSparse with wrong number of arguments"
+        assert len(args) == dimensions, "Filling THnSparse with wrong number of arguments (%i instead of %i)" % (len(args), dimensions)
         hist.Fill(array('d', args), w)
     return filler
     
@@ -54,8 +54,9 @@ def build_histogram_plain(name, title, binning):
             raise RuntimeError("A given set of bins should either be "
                 "three long, or the first element must be 'var' to "
                 "indicate variable binning")
-            
-    hist = TH(name, title, *binning_args)
+    
+    hname = name.split("/")[-1] # remove path from name
+    hist = TH(hname, title, *binning_args)
     for fixup_axis, binning in fixup_axes:
         fixup_axis(hist).Set(len(binning)-1, array("d", binning))
         
@@ -86,7 +87,8 @@ def build_histogram_sparse(name, title, binning):
             raise RuntimeError("A given set of bins should either be "
                 "three long, or the first element must be 'var'")
 
-    hist = R.THnSparseF(name, title, dimensions, 
+    hname = name.split("/")[-1] # remove path from name
+    hist = R.THnSparseF(hname, title, dimensions, 
                         nbins, xmins, xmaxs)
                         
     for i, binning in fixup_axes:
@@ -96,25 +98,53 @@ def build_histogram_sparse(name, title, binning):
     return hist, filler
 
 class HistogramManager(object):
-    def __init__(self, resultname):
-        self.histo_store = {}
+    def __init__(self, filename):
+        self.store = {}
         self.filler_store = {}
-        self.resultname = resultname
+        self.filename = filename
         
         # When histograms are created, don't put them 
         # in the current ROOT directory
-        R.TH1.AddDirectory(False)
+        self.file = R.TFile(filename, "RECREATE")
+        #R.TH1.AddDirectory(False)
+
+    def __setitem__(self, key, value):
+        self.file.cd("/")
+        def mkdirs(d, subdirs):
+            if not subdirs:
+                return d
+            sd, rem = subdirs[0], subdirs[1:]
+            if not d.Get(sd):
+                d.mkdir(sd)
+            return mkdirs(d.Get(sd), rem)
+
+        subdir = key.split("/")
+        name = subdir.pop()
+        d = mkdirs(self.file, subdir)
+        d.cd()    
+        if hasattr(value, "SetDirectory"):
+            value.SetDirectory(d)
+        self.store[key] = (value, name, subdir)
+
+    def __getitem__(self, key):
+        return self.store[key][0]
     
     def finalize(self):
         self.save()
+        self.file.Close()
 
     def save(self):
         """
-        Write histograms in name order.
+        Write objects in name order.
         """
-        nameshistos = [(h.GetName(), h) for h in self.histo_store.values()]
-        for name, histogram in sorted(nameshistos):
-            histogram.Write()
+        for obj, name, subdir in sorted(self.store.values()):
+            if subdir:
+                self.file.Get("/".join(subdir)).WriteObject(obj, name, "")
+            else:
+                self.file.WriteObject(obj, name, "")
+
+    def write_parameter(self, name, value):
+        self[name] = R.TParameter(type(value))(name, value)
 
     def build_histogram(self, *hname, **kwargs):
         """
@@ -122,7 +152,7 @@ class HistogramManager(object):
         """
         
         name =  [element for element in expand_hname(*hname) if element != "*"]
-        name = "_".join(name)
+        name = "/".join(name)
         title = kwargs.pop("t", name) # title defaults to name
         if not "b" in kwargs:
             raise RuntimeError("Please specify binning "
@@ -136,8 +166,8 @@ class HistogramManager(object):
             hist, filler = build_histogram_plain(name, title, binning)
         else:
             hist, filler = build_histogram_sparse(name, title, binning)
-                
-        self.histo_store[hname] = hist
+        
+        self[name] = hist        
         self.filler_store[hname] = filler
         return filler
 
@@ -150,3 +180,35 @@ class HistogramManager(object):
         if hname in self.filler_store:
             return self.filler_store[hname]
         return self.build_histogram(*hname, **kwargs)
+
+
+class AthenaHistogramManager(HistogramManager):
+
+    def __init__(self, resultname):
+        super(AthenaHistogramManager, self).__init__(resultname)
+        # Set up Minty histogram and ntuple service
+        from AthenaCommon import CfgMgr
+        from AthenaCommon.AppMgr import ServiceMgr
+        if not hasattr(ServiceMgr, 'MintyHistogramSvc'):
+            hsvc = CfgMgr.THistSvc("MintyHistogramSvc")
+            hsvc.Output += [ "minty DATAFILE='MINTY.root' TYP='ROOT' OPT='RECREATE'" ]
+            hsvc.PrintAll = False
+            ServiceMgr += hsvc
+        self._hsvc = None 
+
+    @property
+    def hsvc(self):
+        from AthenaPython import PyAthena
+        if self._hsvc:
+            return self._hsvc
+        else:
+            return PyAthena.py_svc('THistSvc/MintyHistogramSvc')
+
+
+    def save(self):
+        nameshistos = [(h.GetName(), h) for h in self.histo_store.values()]
+        for name, histogram in sorted(nameshistos):
+            self.hsvc["/".join(("minty",self.resultname, name))] = histogram
+
+
+        

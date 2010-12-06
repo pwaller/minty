@@ -5,6 +5,7 @@ import xml.etree.cElementTree as cElementTree
 from collections import defaultdict
 from os import listdir
 from os.path import join as pjoin
+from os.path import isfile
 
 class FakeGRL(object):
     def __contains__(self, (run, lb)):
@@ -13,6 +14,9 @@ class FakeGRL(object):
 class GRL(object):
     def __init__(self, grldir):
         self.grl = defaultdict(set)
+        if isfile(grldir):
+            self.parse_xml(grldir)
+            return
         for filename in listdir(grldir):
             if filename.endswith(".xml"):
                 self.parse_xml(pjoin(grldir, filename))

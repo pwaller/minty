@@ -4,7 +4,7 @@ from __future__ import division
 import ROOT as R
 from array import array
 
-from manager import HistogramManager
+from manager import HistogramManager, AthenaHistogramManager
 
 import re
 
