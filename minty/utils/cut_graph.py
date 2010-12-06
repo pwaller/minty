@@ -9,7 +9,7 @@
 
 from types import FunctionType, StringType, MethodType
 
-NA = -1
+NA = 0 # -1
 
 class Cut(object):
     def __init__(self, name, cut, dep=None, val=None):
@@ -20,6 +20,7 @@ class Cut(object):
         self.name = name
         self.dependency = dep
         self.value = val
+        self.dummy = False
 
         if dep:
             self.cut = lambda x : NA if not dep(x) else cut(x)
@@ -27,15 +28,26 @@ class Cut(object):
             self.cut = cut
 
     @property
-    def __call__(self, x):
-        return self.cut(x)
+    def bins(self):
+        if self.dependency is None:
+            return (2, 0, 2)
+        else:
+            #return (3, -1, 2) for tristate (NA == -1)
+            return (2, 0, 2)
+
+class SetContainer(Cut):
+    def __init__(self, container_name, func):
+        super(SetContainer, self).__init__(container_name, self.cut)
+        self.f = lambda e : setattr(e, container_name, func(e))
+        self.dummy = True
+
+    def cut(self, x):
+        self.f(x)
+        return True
 
     @property
     def bins(self):
-        if self.dependency is None:
-            return (self.name, 2, 0, 2)
-        else:
-            return (self.name, 3, -1, 2)
+        return (1,1,2)
 
 class Histo(object):
     def __init__(self, name, value, b, req=(), cross=(), **kwargs):
@@ -58,23 +70,31 @@ class Histo(object):
         self.binning += [cut_dict[x].bins for x in self.cross]
         self.filler = hm.get(self.name, b=self.binning, **self.kwargs)
 
-    def fill(self, event, cut_results):
+    def fill(self, obj, event, cut_results):
         for x in self.requirements:
             if not cut_results[x]:
                 return
-        val = list(self.value(event))
+        val = self.value(obj)
+        if not hasattr(val, "__iter__"):
+            val = (val,)
+        val = list(val)
         val.extend(1.0 if cut_results[x] else 0.0 for x in self.cross)
         self.filler(*val, w = event.event_weight)
 
 class CutGroup(object):
-    def __init__(self, name, histogram_manager):
+    def __init__(self, name, histogram_manager, container=None):
         """Initialize the cut helper with a name and a histogram manager.
-        This class will use 'name' as a base path to save its results"""
-        self.name = name
+        This class will use 'name' as a base path to save its results
+        If a container is specified this cutgroup will refer to
+        and iterate over it"""
+
         self.histogram_manager = self.hm = histogram_manager
+        self.name = name
+        self.container = container
+        self.subgroups = []
+        self.sg = {}
         self.cuts = []
         self.hist = []
-        self.subgroups = []
 
     def __call__(self, obj):
         if isinstance(obj, Cut):
@@ -82,34 +102,59 @@ class CutGroup(object):
         elif isinstance(obj, Histo):
             self.hist.append(obj)
         
-    def add_subgroup(sg, container):
+    def add_subgroup(self, sg):
         assert isinstance(sg, CutGroup)
-        self.subgroups.append((container, obj))
+        self.subgroups.append(sg)
+        self.sg[sg.name] = sg
 
-    def make_subgroup(name, container):
-        self.add_subgroup(CutGroup("%s/%s" % (self.name, name), self.hm))
+    def make_subgroup(self, name, container):
+        cg = CutGroup("%s/%s" % (self.name, name), self.hm, container)
+        self.add_subgroup(cg)
+        return cg
 
     def initialize(self, super_cuts=()):
         """Setup the CutGroup"""
         self._cut_functions = [(cut.name, cut.cut) for cut in self.cuts]
-        cut_names = [cut.name for cut in self.cuts]
-        self(Histo("cutflow", lambda e : (), b=(), cross=cut_names))
+        cut_names = [cut.name for cut in self.cuts if not cut.dummy]
+        title = "cuts;%s;" % (";".join(cut_names))
+        print "setting up ndim histogram crossing : %s" % cut_names
+        self(Histo("%s/cuts" % self.name, lambda e : (), b=(), t=title, cross=cut_names))
 
         for h in self.hist:
             h.initialize(self.cuts, self.hm)
         for sg in self.subgroups:
             sg.initialize(self.cuts + list(super_cuts))
-        
-    def execute(self, event, super_results = {}):
-        # In the following, all cuts are evaluated
-        results = dict([(n, f(event)) for n, f in self._cut_functions])
-        results.update(super_results)
-        for h in self.hist:
-            h.fill(event, results)
-        for container, sg in self.subgroups:
-            if container == "":
-                sg.execute(event, results)
+
+    def evaluate(self, obj, event):
+        self.results = {}
+        for sg in self.subgroups:
+            if sg.container is None:
+                sg.results = sg.execute(obj, event, results)
             else:
-                for obj in getattr(event, container):
-                    sg.execute(obj, results)
+                objs = getattr(obj, sg.container)
+                sg.results = [sg.evaluate(o, event) for o in objs]
+        return dict([(n, f(obj)) for n, f in self._cut_functions])
+
+    def fill(self, obj, event, results=None):
+        if results is None:
+            results = self.results
+        for h in self.hist:
+            h.fill(obj, event, results)
+        for sg in self.subgroups:
+            if sg.container is None:
+                results = dict(self.results.items() + sg.results.items())
+                sg.fill(obj, event, results)
+            else:
+                for o, res in zip(getattr(obj, sg.container), sg.results):
+                    results = dict(self.results.items() + res.items())
+                    sg.fill(o, event, results)
+
+    def execute(self, event):
+        self.results = self.evaluate(event, event)
+        self.fill(event, event, self.results)
+
+    def selected(self, event, name):
+        sg = self.sg[name]
+        results = zip(sg.results, getattr(event, sg.container))
+        return [y for x, y in results if all(bool(z) == True for z in x.values())]
 
