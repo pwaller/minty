@@ -54,8 +54,9 @@ def build_histogram_plain(name, title, binning):
             raise RuntimeError("A given set of bins should either be "
                 "three long, or the first element must be 'var' to "
                 "indicate variable binning")
-            
-    hist = TH(name, title, *binning_args)
+    
+    hname = name.split("/")[-1] # remove path from name
+    hist = TH(hname, title, *binning_args)
     for fixup_axis, binning in fixup_axes:
         fixup_axis(hist).Set(len(binning)-1, array("d", binning))
         
@@ -86,7 +87,8 @@ def build_histogram_sparse(name, title, binning):
             raise RuntimeError("A given set of bins should either be "
                 "three long, or the first element must be 'var'")
 
-    hist = R.THnSparseF(name, title, dimensions, 
+    hname = name.split("/")[-1] # remove path from name
+    hist = R.THnSparseF(hname, title, dimensions, 
                         nbins, xmins, xmaxs)
                         
     for i, binning in fixup_axes:
