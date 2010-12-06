@@ -139,11 +139,11 @@ class EGamma(Particle):
         
     @property
     def isolated(self):
-        return self.EtCone40 < 3000
+        return self.EtCone40_corrected < 3000
         
     @property
     def nonisolated(self):
-        return self.EtCone40 > 5000
+        return self.EtCone40_corrected > 5000
     
     isConv  = TI.bool
     
