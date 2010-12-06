@@ -9,7 +9,7 @@ def make_sparse_hist_filler(hist):
     dimensions = hist.GetNdimensions()
     def filler(*args, **kwargs):
         w = kwargs.pop("w", 1)
-        assert len(args) == dimensions, "Filling THnSparse with wrong number of arguments"
+        assert len(args) == dimensions, "Filling THnSparse with wrong number of arguments (%i instead of %i)" % (len(args), dimensions)
         hist.Fill(array('d', args), w)
     return filler
     

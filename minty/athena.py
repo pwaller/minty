@@ -99,18 +99,7 @@ class AnalysisAlgorithm(PyAthena.Alg):
     def muons(event):
         return list(event.sg["%sMuonCollection" % event.muon_algo])
 
-    @property
-    @event_cache
-    def leptons(event):
-        return list(reversed(sorted(event.muons + event.electrons)))
 
-    @property
-    @event_cache
-    def ll(event):
-        if len(event.leptons) >= 2:
-            l1, l2 = event.leptons[:2]
-            return l1.hlv() + l2.hlv()
-    
     def load_event_info(self):
         if self.event_info_key is None:
             if self.sg.contains("EventInfo", "ByteStreamEventInfo"):
