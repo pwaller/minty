@@ -160,11 +160,11 @@ class DirectoryMerger(DefaultMerger):
             
         KeyClass = get_key_class(key)
         
-        if isinstance(KeyClass, R.TDirectory):
+        if issubclass(KeyClass, R.TDirectory):
             # Create the target subdirectory and run the merge
             original_directory = key.ReadObj()
             with root_directory(self.merged_object):
-                new_target_directory = target_directory.mkdir(name)            
+                new_target_directory = self.merged_object.mkdir(name)            
                 merger = DirectoryMerger(original_directory, new_target_directory)
         else:
             MergerClass = getattr(KeyClass, "_py_merger", None)
