@@ -2,11 +2,9 @@ from logging import getLogger; log = getLogger("minty.treedefs")
 
 from math import tanh, cosh
 
-print "pytuple import"
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
 from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
-print "Done importing pytuple"
 
 from PhotonIDTool import PhotonIDTool
 from OQMaps import check_photon, check_electron
