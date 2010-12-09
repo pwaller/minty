@@ -9,7 +9,6 @@ from logging import getLogger
 
 from .event_cache import event_cache
 from .cut_graph import CutGroup, Cut, Histo, SetContainer
-print "Finished utils imports"
 
 
 time_logger = getLogger("minty.utils.timer")

@@ -131,7 +131,7 @@ def insert_slice(hist, into, slice_bin, xaxis=True):
             into.SetBinContent(slice_bin, bin, hist.GetBinContent(bin))
     
 def thnsparse_iterator(hist):
-    coord = array("i", [0] * hist.GetDimension())
+    coord = array("i", [0] * hist.GetNdimensions())
     for i in xrange(hist.GetNbins()):
         value = hist.GetBinContent(i, coord)
         yield tuple(coord), value
