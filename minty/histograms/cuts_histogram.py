@@ -34,6 +34,9 @@ class CutAxis(object):
     def title(self):
         return "+".join(self.titles)
 
+    def __getitem__(self, args):
+        return self.projected[self.find_bin(*args)]
+
     def find_bin(self, *values):
         h = self.projected.hist
         

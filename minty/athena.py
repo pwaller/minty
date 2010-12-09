@@ -70,6 +70,8 @@ class AnalysisAlgorithm(PyAthena.Alg):
         self.exception_count = 0
         self.event_info_key = None
         self.is_mc = None
+        self.do_cosmics = False
+        self._skim_filter = None
         self.tasks = []
         if "grl_path" in options:
             self.grl = GRL(options["grl_path"])
@@ -88,6 +90,9 @@ class AnalysisAlgorithm(PyAthena.Alg):
 
     def init(self):
         pass
+
+    def setSkimFilter(self, func):
+        self._skim_filter = func
 
     @property
     @event_cache
@@ -134,9 +139,12 @@ class AnalysisAlgorithm(PyAthena.Alg):
         # note that "self" is named "event" here for semantic reasons
         log.debug("Executing Minty")
         event.load_event_info()
+        event.setFilterPassed(False)
         try:
             for task in event.tasks:
                 task(event)
+            if event._skim_filter:
+                event.setFilterPassed(event._skim_filter(event))
             event_cache.invalidate()
         except DropEvent:
             pass
