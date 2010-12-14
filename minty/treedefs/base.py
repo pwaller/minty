@@ -220,6 +220,7 @@ class EGamma(Particle):
                     
 class Photon(EGamma):
     __rootname__ = "ph"
+    particle = "photon"
     
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
@@ -272,7 +273,8 @@ class Photon(EGamma):
 
 class Electron(EGamma):
     __rootname__ = "el"
-
+    particle = "electron"
+    
     oq_function = check_electron
 
     @property
