@@ -60,6 +60,7 @@ class AnalysisBase(object):
         
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
+        global_instance._event = self.input_tree
     
     def finalize(self):
         log.info("Writing to %s" % self.result_name)

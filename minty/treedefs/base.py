@@ -52,16 +52,38 @@ def naming(**kwargs):
         return res
     return functor
 
+def pairs(inputs):
+    if len(inputs) < 2:
+        return
+    for i, o1 in enumerate(inputs):
+        for o2 in inputs[i+1:]:
+            yield o1, o2
+            
+def by_pt(objects):
+    return sorted(objects, key=lambda o: o.pt)
+            
 class Global(object):
     RunNumber = TI.int(naming(pau="Run"))
     EventNumber = TI.int(naming(pau="Event"))
     LumiBlock = TI.int(naming(eg="lbn"))
     
-    _grl = None # Populated by AnalysisBase.setup_objects
+    # Populated by AnalysisBase.setup_objects
+    _grl = None
+    _event = None
     
     @property
     def is_grl(self):
         return (self.RunNumber, self.LumiBlock) in self._grl
+        
+    @property
+    @event_cache
+    def diphotons(self):
+        return list(pairs(by_pt(self._event.photons)))
+    
+    @property
+    @event_cache
+    def dielectrons(self):
+        return list(pairs(by_pt(self._event.electrons)))
 
 class Particle(Fourvec_PtEtaPhiE):
     "Defines an object with (pt, eta, phi, E) available)."
