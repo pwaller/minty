@@ -13,6 +13,11 @@ import ROOT as R
 
 from ..utils import event_cache
 
+from ..external.robustIsEMDefs import (
+    isRobustLoose as isRobustLoose_electron,
+    isRobustMedium as isRobustMedium_electron,
+    isRobusterTight as isRobusterTight_electron)
+
 @property
 def raise_not_implemented(self):
     "When this property is accessed, an error is raised"
@@ -245,11 +250,27 @@ class Electron(EGamma):
 
     oq_function = check_electron
 
-    # Not yet implemented
-    pass_fiducial = robust_tight = 0
-
+    @property
+    def robust_loose(self):
+        args = self.isEM, abs(self.etas2), self.et, self.reta, self.weta2
+        return isRobusterLoose_electron(*args)
+        
+    @property
+    def robuster_tight(self):
+        args = self.isEM, self.expectHitInBLayer, abs(self.etas2), self.et, self.reta, self.weta2
+        return isRobusterTight_electron(*args)
+    
+    robust_nontight = 0 # Doesn't make sense for electrons (?)
+    robust_tight = robuster_tight
+    
+    @property
+    def pass_fiducial(self):
+        return (self.et > 20000 and 
+                (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.47))
+                
     loose = TI.float(naming(pau="isElectronLoose"))
     tight = TI.float(naming(pau="isElectronTight"))
+    expectHitInBLayer = TI.int
     
 class TruthPhoton(Particle):
     __rootname__ = "truth_ph"
