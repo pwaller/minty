@@ -99,6 +99,10 @@ def build_histogram_sparse(name, title, binning):
 
 class HistogramManager(object):
     def __init__(self, filename):
+        # Required to prevent ROOT from complaining about multiple histograms
+        # with the same name.
+        R.TH1.AddDirectory(False)
+
         self.store = {}
         self.hist_store = {}
         self.filler_store = {}
