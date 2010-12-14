@@ -61,20 +61,12 @@ class AnalysisBase(object):
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
     
-    def write_parameter(self, name, value):
-        param = R.TParameter(type(value))(name, value)
-        param.Write()
-    
     def finalize(self):
         log.info("Writing to %s" % self.result_name)
-        f = R.TFile(self.result_name, "recreate")
         
-        self.histogram_manager.finalize()
-        self.write_parameter("exception_count", self.exception_count)
-                
-        f.Close()
-        
-        #self.tally_manager.finalize()
+        hm = self.histogram_manager
+        hm.write_parameter("exception_count", self.exception_count)
+        hm.finalize()
         
     def event(self, idx, event):
         event.index = idx
