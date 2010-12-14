@@ -97,7 +97,10 @@ class Vertex(object):
     nTracks = TI.int(naming(pau="ntracks"))
     
 class Jet(Fourvec_PtEtaPhiE):
-    pass
+    
+    isBad = TI.bool
+    isGood = TI.bool
+    isUgly = TI.bool
     
 class EGamma(Particle):
     isEM = TI.float
