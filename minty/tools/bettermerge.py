@@ -37,8 +37,8 @@ def timer(what):
     try: yield
     finally:
         alive_after = alive_objects()
-        print "Took %.2f to %s" % (time()-start, what), 
-        print "(alive objects: pre: %i post: %i)" % (alive_before, alive_after)
+        #print "Took %.2f to %s" % (time()-start, what), 
+        #print "(alive objects: pre: %i post: %i)" % (alive_before, alive_after)
 
 @contextmanager
 def root_directory(directory):
@@ -181,8 +181,8 @@ class DirectoryMerger(DefaultMerger):
         with timer("Fetch most recent keys"):
             all_keys, new_keys = most_recent_cycle_keys(next_object)
         
-        print "  Total objects in merge registry:", len(self.contents)
-        print "  Number of keys: %5i, %5i" % (len(all_keys), len(new_keys))
+        #print "  Total objects in merge registry:", len(self.contents)
+        #print "  Number of keys: %5i, %5i" % (len(all_keys), len(new_keys))
         
         with timer("iterate over keys"):
             for key in new_keys:
