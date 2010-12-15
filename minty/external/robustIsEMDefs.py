@@ -104,15 +104,6 @@ ElectronTightRobust_NoReta_NoW2_NoConvCut = (
     TRT_ELECTRON )
 
 
-print CALOMIDDLE_ELECTRON_NoReta_NoW2 
-print ElectronLoose_NoReta_NoW2 
-print CALOMIDDLE_ELECTRON_NoReta_NoW2 
-print CALO_ELECTRON_NoReta_NoW2 
-print ElectronMedium_NOReta_NoW2 
-print ElectronTightRobust_NoReta_NoW2 
-print ElectronTightRobust_NoReta_NoW2_NoConvCut 
-print
-
 def getVars(el):
     """
      The isRobustLoose, isRobustMedium, isRobusterTight methods take:
