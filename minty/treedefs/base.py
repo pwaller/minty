@@ -114,7 +114,13 @@ class EGamma(Particle):
     @property
     @event_cache
     def good_oq(self):
-        oq = self.oq_function(self._event.RunNumber, self.cl.eta, self.cl.phi)
+        run = self._event.RunNumber
+        if run < 152166:
+            # Sigh..
+            # Use most recent monte carlo map.
+            # In the future, use a weight.
+            run = 500000
+        oq = self.oq_function(run, self.cl.eta, self.cl.phi)
         return oq < 3
     
     @property
