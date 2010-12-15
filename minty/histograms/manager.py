@@ -142,6 +142,7 @@ class HistogramManager(object):
         """
         Write objects in name order.
         """
+        log.info("Writing to %s", self.filename)
         for obj, name, subdir in sorted(self.store.values(), key=lambda (a, b, c): c):
             if subdir:
                 self.file.Get("/".join(subdir)).WriteObject(obj, name, "")
