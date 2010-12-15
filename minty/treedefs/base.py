@@ -168,10 +168,6 @@ class EGamma(Particle):
         return not (self.isEM & 0x45fc01)
         
     @property
-    def high_pt(self):
-        return self.cl.pt > 40000
-        
-    @property
     def isolated(self):
         return self.EtCone40_corrected < 3000
         
@@ -219,6 +215,8 @@ class EGamma(Particle):
         
         # matched in pau is called "ph_matchMC"
         matched = TI.bool(naming(pau=lambda x, y: x.replace("{leafname}_", "match")))
+        
+        isPhotonFromHardProc = TI.bool
         
         naming = staticmethod(naming(eg ="{rootname}_truth_{leafname}",
                                      pau="{rootname}_{leafname}_MC"))
