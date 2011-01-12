@@ -10,6 +10,7 @@ setup(
             "ip_tfile = minty.tools.ipython_file:main",
             "hmerge = minty.tools.bettermerge:main",
             "minty-rescale = minty.tools.minty_rescale:main",
+            "minty-xs = minty.tools.minty_xsection:main",
         ]
     },
     scripts=["scripts/ds_number_to_what"],
