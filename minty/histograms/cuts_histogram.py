@@ -104,6 +104,10 @@ class CutAxis(object):
     @property
     def true(self):
         return self.projected[self.find_bin(*(True,)*len(self.titles))]
+
+    @property
+    def true_unweighted(self):
+        return self.projected.hist.GetBinError(self.find_bin(*(True,)*len(self.titles)))**2
         
     @property
     def false(self):
@@ -167,6 +171,8 @@ class CutHistogram(object):
         return self.hist.GetBinContent(what)
         
     def project(self, *axes):
+        if len(self.axes) == 1:
+            return make_cut_histogram(self.hist)
         assert len(axes) < len(self.axes)
         #print "Projecting axes:", axes, [self.hist.GetAxis(i).GetTitle() for i in axes]
         
