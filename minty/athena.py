@@ -26,6 +26,7 @@ def athena_setup(input = None, max_events = None):
 
     # setup autoconfiguration to deal also with DAODs
     from RecExConfig.RecFlags import rec
+    #rec.doApplyAODFix.set_Value_and_Lock(False) ## Uncomment for data from v15 skimmed with v16
     rec.readRDO.set_Value_and_Lock(False)
     rec.readESD.set_Value_and_Lock(False)
     rec.readAOD.set_Value_and_Lock(True)
@@ -50,14 +51,27 @@ def athena_setup(input = None, max_events = None):
         athenaCommonFlags.EvtMax = max_events
 
 
-
 def setup_pool_skim(filename, accept_algs, type="AOD"):
     from OutputStreamAthenaPool.MultipleStreamManager import MSMgr
     from PrimaryDPDMaker import PrimaryDPD_OutputDefinitions as dpdOutput
     stream_name = "StreamD2%sM_MINTY" % type
     stream = MSMgr.NewPoolStream(stream_name, filename)
     stream.AcceptAlgs( accept_algs )
-    dpdOutput.addAllItemsFromInputExceptExcludeList( stream_name, [] )
+    dpdOutput.addAllItemsFromInputExceptExcludeList( stream_name, "")
+    if False:
+        dpdOutput.addBasicOutput(stream_name)
+        dpdOutput.addBasicPhysics(stream_name)
+        dpdOutput.addCalorimeter(stream_name)
+        dpdOutput.addEGamma(stream_name)
+        dpdOutput.addInnerDetectorPrepRawData(stream_name)
+        dpdOutput.addMissingEt(stream_name)
+        dpdOutput.addMuons(stream_name)
+        dpdOutput.addPerfLite(stream_name)
+        dpdOutput.addTau(stream_name)
+        dpdOutput.addTrackParticles(stream_name)
+        dpdOutput.addTracks(stream_name)
+        dpdOutput.addTrigger(stream_name)
+        dpdOutput.addTruth(stream_name)
 
 class DropEvent(Exception):
     pass
