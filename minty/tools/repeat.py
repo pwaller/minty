@@ -14,7 +14,7 @@ def main():
                 modname, funcname = modparts
             else:
                 (modname,) = modparts
-                funcname = main
+                funcname = "main"
                 
             print "Importing", modname
             mod = reload(__import__(modname, fromlist=[funcname]))
