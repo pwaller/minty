@@ -87,6 +87,26 @@ class Global(object):
 
 class Particle(Fourvec_PtEtaPhiE):
     "Defines an object with (pt, eta, phi, E) available)."
+    
+    @property
+    def in_barrel(self):
+        return abs(self.etas2) < 1.37
+    
+    @property
+    def in_crack(self):
+        return 1.37 <= abs(self.etas2) < 1.52
+        
+    @property
+    def in_endcap(self):
+        return 1.52 <= abs(self.etas2) < 2.37
+    
+    @property
+    def region_character(self):
+        if self.in_barrel: return "B"
+        if self.in_crack: return "C"
+        if self.in_endcap: return "E"
+        return "X"
+        raise RuntimeError("Bad Eta: %.4f" % self.etas2)
 
 class Trigger(object):
     _2g15_loose = g10_loose = g20_loose = g30_loose = g40_loose = 0
@@ -95,6 +115,7 @@ class Vertex(object):
     __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
     
     nTracks = TI.int(naming(pau="ntracks"))
+    zvertex = TI.int(naming(pau="ID_zvertex"))
     
 class Jet(Fourvec_PtEtaPhiE):
     
@@ -122,6 +143,13 @@ class EGamma(Particle):
             run = 500000
         oq = self.oq_function(run, self.cl.eta, self.cl.phi)
         return oq < 3
+    
+    @property
+    def graviton2011_fiducial(self):
+        return (self.loose and 
+                self.cl.pt > 25000 and 
+                not self.in_crack and 
+                self.good_oq)
     
     @property
     def et(self):
