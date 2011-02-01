@@ -10,7 +10,7 @@ def rescale_dir(d_in, d_out, scale):
     """
     _, keys = most_recent_cycle_keys(d_in)
     
-    print "Scaling ", d_in.GetPath(), " -> ", d_out.GetPath()
+    print " Scaling ", d_in.GetPath(), " -> ", d_out.GetPath()
     
     for key in keys:
         name, obj = key.GetName(), key.ReadObj()
@@ -19,7 +19,7 @@ def rescale_dir(d_in, d_out, scale):
             rescale_dir(obj, new_dir, scale)
         elif isinstance(obj, (R.TH1, R.THnSparse)):
             d_out.cd()
-            print "  Scaling %s" % name
+            #print "  Scaling %s" % name
             obj.Scale(scale)
             obj.Write()        
 
@@ -29,6 +29,7 @@ def main():
     fname_in = argv[2]
     fname_out = argv[3]
     
+    print "Rescaling", fname_in
     f_in = R.TFile(fname_in, "read")
     f_out = R.TFile(fname_out, "recreate")
     
