@@ -79,6 +79,10 @@ class AnalysisBase(object):
         to disk.
         """
         log.info("Run, period changed: %s, %s", period, run)
+        if self.histogram_manager and not self.options.run_specific_output:
+            # Don't create a new file unless --run-specific-output specified
+            return
+            
         if self.histogram_manager is not None:
             self.flush()
         
