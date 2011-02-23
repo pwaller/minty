@@ -15,9 +15,61 @@ from time import time
 import ROOT as R; R.kTRUE
 
 from ROOT import gROOT
-this_directory = dirname(abspath(__file__))
-gROOT.LoadMacro("%s/CopyEntries.C+" % this_directory)
-from ROOT import CopyEntries
+
+## Copy Entries of a tree with the help of a TTreeCloner. Adapted from ROOT 5.28
+from ROOT import TTree, TTreeCloner, kTRUE, kFALSE
+def CopyEntries(to, tree, option=""):
+    nbytes = 0
+    treeEntries = tree.GetEntriesFast()
+    nentries = treeEntries
+
+    #// Quickly copy the basket without decompression and streaming.
+    totbytes = to.GetTotBytes()
+    i = 0
+    while i < nentries:
+        if tree.LoadTree(i) < 0:
+            break;
+
+            
+        if to.GetDirectory():
+            file2 = to.GetDirectory().GetFile()
+            if file2 and (file2.GetEND() > TTree.GetMaxTreeSize()):
+                if to.GetDirectory() == file2:
+                    to.ChangeFile(file2);
+
+        cloner = TTreeCloner(tree.GetTree(), to, option, TTreeCloner.kNoWarnings)
+        if cloner.IsValid():
+            to.SetEntries(to.GetEntries() + tree.GetTree().GetEntries())
+            cloner.Exec()
+        else:
+            if i == 0:
+              # If the first cloning does not work, something is really wrong
+              # (since apriori the source and target are exactly the same structure!)
+              raise Exception("Something is really wrong!")
+            
+            if cloner.NeedConversion():
+                localtree = tree.GetTree()
+                tentries = localtree.GetEntries()
+                for ii in range(tentries):
+                    if localtree.GetEntry(ii) <= 0:
+                        break
+                    to.Fill()
+                if to.GetTreeIndex():
+                    to.GetTreeIndex().Append(tree.GetTree().GetTreeIndex(), kTRUE)
+            else:
+                print("WARNING: %s" % str(cloner.GetWarning()))
+                if tree.GetDirectory() and tree.GetDirectory().GetFile():
+                    print("WARNING: Skipped file %s" % tree.GetDirectory().GetFile().GetName())
+                else:
+                    print("WARNING: Skipped file number %i" % tree.GetTreeNumber())
+        # loop increment
+        i += tree.GetTree().GetEntries()
+
+    if to.GetTreeIndex():
+        to.GetTreeIndex().Append(0, kFALSE); # Force the sorting
+
+    nbytes = to.GetTotBytes() - totbytes
+    return nbytes;
 
 def tree_copy_selection(in_tree, out_tree, selection):
     """
@@ -39,6 +91,8 @@ def tree_copy_duplicate_removal(in_tree, out_tree, key, keys):
         if not key_value in keys:
             out_tree.Fill()
             keys.add(key_value)
+
+# End of ugly TTree stuff
 
 class define_merger(object):
     def __init__(self, *classes):
@@ -180,7 +234,7 @@ class TreeMerger(DefaultMerger):
 
             tree_copy_selection(in_tree, out_tree, expr)
         else:
-            CopyEntries(out_tree, in_tree, -1, "fast")
+            CopyEntries(out_tree, in_tree)
 
 @define_merger(R.TDirectory)
 class DirectoryMerger(DefaultMerger):
