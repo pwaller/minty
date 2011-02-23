@@ -8,12 +8,37 @@ from gc import collect, get_count, get_objects
 from itertools import chain
 from optparse import OptionParser
 from os import walk
-from os.path import exists, join as pjoin
+from os.path import exists, join as pjoin, dirname, abspath
 from pprint import pprint
 from time import time
 
 import ROOT as R; R.kTRUE
 
+from ROOT import gROOT
+this_directory = dirname(abspath(__file__))
+gROOT.LoadMacro("%s/CopyEntries.C+" % this_directory)
+from ROOT import CopyEntries
+
+def tree_copy_selection(in_tree, out_tree, selection):
+    """
+    Copy `in_tree` to `out_tree`, checking selection(in_tree) for each event.
+    """
+    for entry in in_tree:
+        if selection(entry):
+            out_tree.Fill()
+    
+def tree_copy_duplicate_removal(in_tree, out_tree, key, keys):
+    """
+    Copy `in` to `out` for events where event.`key` does not exist in `keys`
+    
+    `keys` is the set of keys seen so far.
+    TODO: Make it so that options.key can be an arbitrary expression like select?
+    """
+    for entry in in_tree:
+        key_value = getattr(entry, key)
+        if not key_value in keys:
+            out_tree.Fill()
+            keys.add(key_value)
 
 class define_merger(object):
     def __init__(self, *classes):
@@ -134,6 +159,28 @@ class ParameterMerger(DefaultMerger):
         new_value = self.merged_object.GetVal() + next_object.GetVal()
         self.merged_object.SetVal(new_value)
 
+@define_merger(R.TTree)
+class TreeMerger(DefaultMerger):
+    key = None
+    selection = None
+    def __init__(self, first_object, target_directory):
+        with root_directory(target_directory):
+            self.merged_object = first_object.CloneTree(0)
+
+    def merge(self, in_tree):
+        # Updated in tree_copy_duplicate_removal
+        keys = set()
+        out_tree = self.merged_object
+        in_tree.CopyAddresses(out_tree)
+        if TreeMerger.key:
+            tree_copy_duplicate_removal(in_tree, out_tree, TreeMerger.key, keys)
+        elif TreeMerger.selection:
+            expr = eval(compile("lambda e: %s" % TreeMerger.selection,
+                       "<command line --select option>", "eval"))
+
+            tree_copy_selection(in_tree, out_tree, expr)
+        else:
+            CopyEntries(out_tree, in_tree, -1, "fast")
 
 @define_merger(R.TDirectory)
 class DirectoryMerger(DefaultMerger):
@@ -227,12 +274,17 @@ def merge_files(output_filename, input_filenames):
         directory_merger.finish()
 
 def main():
-
     parser = OptionParser()
     parser.add_option("-o", "--outfile", default="merged.root",
                       help="output file")
     parser.add_option("-f", "--force", action="store_true",
                       help="overwrite output file if it exists. (default: no)")
+    parser.add_option("-k", "--key", default=None,
+                      help="use this key for making any trees unique (default: None)")
+    parser.add_option("-s", "--select", default=None, dest="selection",
+                      help="a python string which is evaluated with 'e' as the "
+                           "event, used to choose whether a given event will "
+                           "be copied.")
 
     from sys import argv
     options, input_filenames = parser.parse_args(argv)
@@ -242,6 +294,8 @@ def main():
         parser.print_help()
         parser.error("Please specify a list of files to be merged")
     
+    TreeMerger.key = options.key
+    TreeMerger.selection = options.selection
     output_name = options.outfile
     if exists(output_name) and not options.force:
         raise RuntimeError("'%s' already exists. Use --force to overwrite"
