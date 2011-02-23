@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+NUMBER=$1
+
+{
+dq2-ls mc09_7TeV.$NUMBER.\*simul.HITS.\*/ | sed -r 's/^[^\.]+\.[^\.]+\.([^\.]+)\..*$/\1/'
+dq2-ls mc10_7TeV.$NUMBER.\*simul.HITS.\*/ | sed -r 's/^[^\.]+\.[^\.]+\.([^\.]+)\..*$/\1/'
+} | sort -u

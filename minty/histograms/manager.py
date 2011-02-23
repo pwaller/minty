@@ -106,7 +106,12 @@ def build_histogram_sparse(name, title, binning):
 
 class HistogramManager(object):
     def __init__(self, filename):
+        # Required to prevent ROOT from complaining about multiple histograms
+        # with the same name.
+        R.TH1.AddDirectory(False)
+
         self.store = {}
+        self.hist_store = {}
         self.filler_store = {}
         self.filename = filename
         
@@ -144,7 +149,8 @@ class HistogramManager(object):
         """
         Write objects in name order.
         """
-        for obj, name, subdir in sorted(self.store.values()):
+        log.info("Writing to %s", self.filename)
+        for obj, name, subdir in sorted(self.store.values(), key=lambda (a, b, c): c):
             if subdir:
                 self.file.Get("/".join(subdir)).WriteObject(obj, name, "")
             else:
@@ -173,10 +179,14 @@ class HistogramManager(object):
             hist, filler = build_histogram_plain(name, title, binning)
         else:
             hist, filler = build_histogram_sparse(name, title, binning)
-        
-        self[name] = hist        
+                
+        self[name] = hist
+        self.hist_store[hname] = hist
         self.filler_store[hname] = filler
         return filler
+
+    def geth(self, *hname):
+        return self.hist_store[hname]
 
     def get(self, *hname, **kwargs):
         """

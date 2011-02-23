@@ -2,20 +2,15 @@ from __future__ import with_statement
 
 from logging import getLogger; log = getLogger("minty.base")
 
+from os.path import exists
+
 import ROOT as R
 
-print "Doing minty imports"
-print "  utils"
 from minty.utils import timer, event_cache
-print "  grl"
 from minty.utils.grl import GRL, FakeGRL
-print "  hm"
 from minty.histograms import HistogramManager
-print "  meta"
-from minty.metadata import TallyManager
-print "  tree"
+from minty.metadata.period import period_from_run
 from minty.treedefs.egamma import egamma_wrap_tree
-print "Done minty imports"
 
 class DropEvent(Exception):
     pass
@@ -39,13 +34,11 @@ class AnalysisBase(object):
         self.setup_objects()
         
         self.result_name = options.output
-        self.histogram_manager = self.h = HistogramManager(options.output)
-        self.tally_manager = TallyManager()
+        self.histogram_manager = self.h = None
+        
+        self.current_run = self.previous_run = None
         
         self.exception_count = 0
-        
-        # TODO
-        #self.tally_manager.count("runlumi", (Run, LumiNum))
         
         self.tasks = []
     
@@ -67,25 +60,59 @@ class AnalysisBase(object):
         
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
+        global_instance._event = self.input_tree
     
-    def write_parameter(self, name, value):
-        param = R.TParameter(type(value))(name, value)
-        param.Write()
+    def get_unused_filename(self, name):
+        """
+        Return a file that doesn't exist yet by appending numbers to the filename
+        """
+        for i in xrange(300):
+            namepart = "%s-%i" % (name, i)
+            if not exists(namepart):
+                return namepart
+        
+        raise RuntimeError("Created more files than expected..")
     
+    def init_result_store(self, period, run):
+        """
+        Create the result store. If it already exists, flush the existing one
+        to disk.
+        """
+        log.info("Run, period changed: %s, %s", period, run)
+        if self.histogram_manager is not None:
+            self.flush()
+        
+        result_name = self.options.output
+        if self.options.run_specific_output:
+            if ".root" in result_name:
+                result_name = result_name[:-len(".root")]
+            result_name = result_name + "-P%s-R%i.root" % (period, run)
+            
+        result_name = self.get_unused_filename(result_name)
+        self.histogram_manager = self.h = HistogramManager(result_name)
+        self.exception_count = 0
+        
+    
+    def flush(self):
+        """
+        Write analysis result to disk
+        """
+        log.info("Flushing data store..")
+        hm = self.histogram_manager
+        hm.write_parameter("exception_count", self.exception_count)
+        hm.finalize()
+        
     def finalize(self):
-        log.info("Writing to %s" % self.result_name)
-        f = R.TFile(self.result_name, "recreate")
-        
-        self.histogram_manager.finalize()
-        self.write_parameter("exception_count", self.exception_count)
-                
-        f.Close()
-        
-        #self.tally_manager.finalize()
+        self.flush()
         
     def event(self, idx, event):
         event.index = idx
         event_cache.invalidate()
+        self.current_run = event.RunNumber
+        if self.current_run != self.previous_run:
+            self.period, (_, _) = period_from_run(self.current_run)
+            self.init_result_store(self.period, self.current_run)
+            
         try:
             for task in self.tasks:
                 task(self, event)
@@ -105,6 +132,8 @@ class AnalysisBase(object):
             if self.exception_count > self.options.max_exception_count:
                 raise RuntimeError("Encountered more than `max_exception_count`"
                                    " exceptions. Aborting.")
+                                   
+        self.previous_run = self.current_run
         
     def run(self):
         events = min(self.input_tree.tree.GetEntries(), self.options.limit)
