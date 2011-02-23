@@ -79,7 +79,7 @@ class Histo(object):
             val = (val,)
         val = list(val)
         val.extend(1.0 if cut_results[x] else 0.0 for x in self.cross)
-        self.filler(*val, w = event.event_weight)
+        self.filler(*val, **{"w": event.event_weight} )
 
 class CutGroup(object):
     def __init__(self, name, histogram_manager, container=None):

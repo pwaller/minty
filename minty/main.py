@@ -1,8 +1,11 @@
+from __future__ import with_statement
+
 from .options import parse_options
 from .utils import init_root
 from .utils.logger import log_level
 
 from logging import DEBUG, getLogger; log = getLogger("minty.main")
+
 
 def make_main(Analysis):
     def thunk():

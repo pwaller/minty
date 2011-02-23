@@ -47,7 +47,7 @@ class ColoredFormatter(logging.Formatter):
 
 
 LoggerClass = logging.getLoggerClass()
-@logging.setLoggerClass
+
 class ExtendedLogger(LoggerClass):
     def __init__(self, name):
         LoggerClass.__init__(self, name)
@@ -59,6 +59,7 @@ class ExtendedLogger(LoggerClass):
     def fatal(self, *args):
         self.critical(*args)
 
+logging.setLoggerClass(ExtendedLogger)
 
 def get_log_handler(singleton={}):
     """
