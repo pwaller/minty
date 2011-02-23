@@ -14,11 +14,11 @@ from minty.metadata import TallyManager
 
 def athena_setup(input = None, max_events = None):
     # use closest DB replica
-    from AthenaCommon.AppMgr import ServiceMgr
-    from PoolSvc.PoolSvcConf import PoolSvc
-    ServiceMgr+=PoolSvc(SortReplicas=True)
-    from DBReplicaSvc.DBReplicaSvcConf import DBReplicaSvc
-    ServiceMgr+=DBReplicaSvc(UseCOOLSQLite=False)
+    #from AthenaCommon.AppMgr import ServiceMgr
+    #from PoolSvc.PoolSvcConf import PoolSvc
+    #ServiceMgr+=PoolSvc(SortReplicas=True)
+    #from DBReplicaSvc.DBReplicaSvcConf import DBReplicaSvc
+    #ServiceMgr+=DBReplicaSvc(UseCOOLSQLite=False)
     #ServiceMgr+=DBReplicaSvc(UseCOOLSQLite=True)
 
     # This import makes Athena read Pool files.
@@ -54,10 +54,10 @@ def athena_setup(input = None, max_events = None):
 def setup_pool_skim(filename, accept_algs, type="AOD"):
     from OutputStreamAthenaPool.MultipleStreamManager import MSMgr
     from PrimaryDPDMaker import PrimaryDPD_OutputDefinitions as dpdOutput
-    stream_name = "StreamD2%sM_MINTY" % type
+    stream_name = "StreamD%s" % (type)
     stream = MSMgr.NewPoolStream(stream_name, filename)
     stream.AcceptAlgs( accept_algs )
-    dpdOutput.addAllItemsFromInputExceptExcludeList( stream_name, "")
+    dpdOutput.addAllItemsFromInputExceptExcludeList( stream_name, [])
     if False:
         dpdOutput.addBasicOutput(stream_name)
         dpdOutput.addBasicPhysics(stream_name)
