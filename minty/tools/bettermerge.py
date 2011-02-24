@@ -5,19 +5,17 @@ from IPython.Shell import IPShellEmbed; ip = IPShellEmbed(["-pdb"])
 from collections import namedtuple
 from contextlib import contextmanager
 from gc import collect, get_count, get_objects
-from itertools import chain
 from optparse import OptionParser
-from os import walk
-from os.path import exists, join as pjoin, dirname, abspath
-from pprint import pprint
+from os.path import exists
 from time import time
 
 import ROOT as R; R.kTRUE
+from ROOT import gROOT, gSystem
+from ROOT import TTree, TTreeCloner, kTRUE, kFALSE
 
-from ROOT import gROOT
+
 
 ## Copy Entries of a tree with the help of a TTreeCloner. Adapted from ROOT 5.28
-from ROOT import TTree, TTreeCloner, kTRUE, kFALSE
 def CopyEntries(to, tree, option=""):
     nbytes = 0
     treeEntries = tree.GetEntriesFast()
@@ -91,8 +89,7 @@ def tree_copy_duplicate_removal(in_tree, out_tree, key, keys):
         if not key_value in keys:
             out_tree.Fill()
             keys.add(key_value)
-
-# End of ugly TTree stuff
+# End of TTree copy utilities
 
 class define_merger(object):
     def __init__(self, *classes):
@@ -225,6 +222,7 @@ class TreeMerger(DefaultMerger):
         # Updated in tree_copy_duplicate_removal
         keys = set()
         out_tree = self.merged_object
+
         in_tree.CopyAddresses(out_tree)
         if TreeMerger.key:
             tree_copy_duplicate_removal(in_tree, out_tree, TreeMerger.key, keys)
