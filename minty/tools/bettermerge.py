@@ -222,6 +222,7 @@ class TreeMerger(DefaultMerger):
     def __init__(self, first_object, target_directory):
         with root_directory(target_directory):
             self.merged_object = first_object.CloneTree(0)
+            self.merge(first_object)
 
     def merge(self, in_tree):
         # Updated in tree_copy_duplicate_removal
