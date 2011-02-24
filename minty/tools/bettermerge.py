@@ -356,3 +356,6 @@ def main():
                            % (output_name))
                            
     merge_files(output_name, input_filenames)
+
+if __name__ == "__main__":
+    main()
