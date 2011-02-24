@@ -169,8 +169,13 @@ class DefaultMerger(object):
     def merge_safe(self, next_object):
         # Note not using isinstance here because we don't want to allow merging
         # subclasses
-        assert_msg = "Attempt to merge incompatible types"
-        assert type(self.merged_object) is type(next_object), assert_msg
+
+        if issubclass( type(self.merged_object), R.TFile ) and issubclass( type(next_object), R.TFile ):
+            pass
+        else: 
+            assert_msg = "Attempt to merge incompatible types"
+            assert type(self.merged_object) is type(next_object), assert_msg
+
         self.merge(next_object)
         
     def merge(self, next_object):
@@ -304,17 +309,56 @@ class DirectoryMerger(DefaultMerger):
                     continue
                 merger.finish()
 
-def root_file_generator(filenames):
+def root_file_generator(filenames, fs=False, fs_protocol='rfio'):
+
+    if fs:
+        mgr, TCopyFile = init_file_stager(fs_protocol=fs_protocol)
+        for i, filename in enumerate(filenames):
+            mgr.addToList(filename)
+
     for i, filename in enumerate(filenames):
         print "Complete:", i, "/", len(filenames), filename
         with timer("process file %i" % i):
-            yield R.TFile(filename)
+            if fs:
+                yield TCopyFile(filename)
+            else: 
+                yield R.TFile.Open(filename)
 
-def merge_files(output_filename, input_filenames):
+def init_file_stager(fs_protocol='rfio'):
+
+    ## Try to load FileStager library
+    print 'Loading FileStager library ...'
+    gSystem.Load('libFileStagerLib')
+    from ROOT import TStageManager, TCopyFile, TCopyChain
+    gROOT.GetPluginManager().AddHandler("TFile", "^gridcopy:", "TCopyFile","TCopyFile_cxx", "TCopyFile(const char*,Option_t*,const char*,Int_t)")
+
+    print 'Enabling FileStager ...'
+    TCopyChain.SetOriginalTChain(False)
+    TCopyFile.SetOriginalTFile(False)
+
+    print 'Setting up FileStager manager ...'
+    mgr = TStageManager.instance()
+    mgr.setInfilePrefix('gridcopy://')
+    mgr.setOutfilePrefix('file:')
+    mgr.setCpCommand('%s/fs_copy' % this_directory )
+    mgr.addCpArg('-v')
+    mgr.addCpArg('--vo')
+    mgr.addCpArg('atlas')
+    mgr.addCpArg('-t')
+    mgr.addCpArg('1200')
+    mgr.addCpArg('-p')
+    mgr.addCpArg(fs_protocol)
+    mgr.verbose()
+    mgr.verboseWait()
+   
+    return mgr, TCopyFile
+
+def merge_files(output_filename, input_filenames, fs=False, fs_protocol='rfio'):
+
     output_file = R.TFile(output_filename, "recreate")
     output_file.SaveSelf(True)
     
-    input_generator = root_file_generator(input_filenames)
+    input_generator = root_file_generator(input_filenames, fs, fs_protocol)
     first_file = input_generator.next()
     
     directory_merger = DirectoryMerger(first_file, output_file)
@@ -337,6 +381,10 @@ def main():
                       help="a python string which is evaluated with 'e' as the "
                            "event, used to choose whether a given event will "
                            "be copied.")
+    parser.add_option("-t", "--stager", action="store_true", dest="fs",
+                      help="enables the file stager for reading input files.")
+    parser.add_option("-p", "--protocol", default="rfio", dest="fs_protocol",
+                      help="sets copy protocol for file stager.")
 
     from sys import argv
     options, input_filenames = parser.parse_args(argv)
@@ -345,6 +393,13 @@ def main():
     if not input_filenames:
         parser.print_help()
         parser.error("Please specify a list of files to be merged")
+
+    if options.fs and options.fs_protocol.lower() not in ['lcgcp','rfio','gsidcap','dcap','gsiftp','file']:
+        parser.print_help()
+        parser.error("file stager protocole %s not supported" % options.fs_protocol)
+
+    if options.fs and not file_stager_available:
+        parser.error("file stager library could not be loaded!")
     
     TreeMerger.key = options.key
     TreeMerger.selection = options.selection
@@ -353,7 +408,7 @@ def main():
         raise RuntimeError("'%s' already exists. Use --force to overwrite"
                            % (output_name))
                            
-    merge_files(output_name, input_filenames)
+    merge_files(output_name, input_filenames, fs=options.fs, fs_protocol=options.fs_protocol)
 
 if __name__ == "__main__":
     main()
