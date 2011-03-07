@@ -118,10 +118,14 @@ class Vertex(object):
     zvertex = TI.int(naming(pau="ID_zvertex"))
     
 class Jet(Fourvec_PtEtaPhiE):
+    __rootname__ = "jet"
     
-    isBad = TI.bool
-    isGood = TI.bool
-    isUgly = TI.bool
+    #isBad = TI.bool
+    #isGood = TI.bool
+    #isUgly = TI.bool
+    
+    emFraction = TI.float(naming(pau="emFraction"))
+    quality = TI.float(naming(pau="quality"))
     
 class EGamma(Particle):
     isEM = TI.float
@@ -256,6 +260,10 @@ class Photon(EGamma):
     
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
+    imatchRecJet = TI.float(naming(pau="imatchRecJet"))
+    
+    
+    L1_e = TI.float(naming(pau="L1_e"))
     
     EF_matchPass = TI.int
     
@@ -303,6 +311,18 @@ class Photon(EGamma):
         return (self.cl.pt >= 15000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37))        
 
+    @property
+    def jet(self):
+        jetidx = self.imatchRecJet
+        if jetidx < 0:
+            return None
+        return self._event.jets[jetidx]
+        
+    @property
+    def good_jet_quality(self):
+        j = self.jet
+        return j is not None and j.emFraction < 0.95 or j.quality < 0.8
+    
 class Electron(EGamma):
     __rootname__ = "el"
     particle = "electron"
