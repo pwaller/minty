@@ -308,7 +308,7 @@ class Photon(EGamma):
     @property
     @event_cache
     def pass_fiducial(self):
-        return (self.cl.pt >= 15000 and 
+        return (self.cl.pt >= 25000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37))        
 
     @property
