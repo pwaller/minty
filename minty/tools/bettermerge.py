@@ -205,17 +205,38 @@ class DirectoryMerger(DefaultMerger):
                     continue
                 merger.finish()
 
-def root_file_generator(filenames):
+from contextlib import closing
+from tarfile import open as tarfile_open
+from shutil import rmtree
+from tempfile import mkdtemp
+from mimetypes import guess_type
+ziptypes = set([('application/x-tar', 'gzip')])
+
+def try_tarfile(filename, pattern):
+    with closing(tarfile_open(filename)) as tar:
+        for f in tar.getmembers():
+            if ".root" in f.path and (not pattern or pattern in f.path):
+                print " -", f.path
+                tmpdir = mkdtemp()
+                tar.extract(f.path, tmpdir)
+                yield R.TFile(tmpdir + "/" + f.path)
+                rmtree(tmpdir)
+
+def root_file_generator(filenames, pattern):
     for i, filename in enumerate(filenames):
         print "Complete:", i, "/", len(filenames), filename
         with timer("process file %i" % i):
-            yield R.TFile(filename)
+            if guess_type(filename) in ziptypes:
+                for f in try_tarfile(filename, pattern):
+                    yield f
+            else:
+                yield R.TFile(filename)
 
-def merge_files(output_filename, input_filenames):
+def merge_files(output_filename, input_filenames, pattern=None):
     output_file = R.TFile(output_filename, "recreate")
     output_file.SaveSelf(True)
     
-    input_generator = root_file_generator(input_filenames)
+    input_generator = root_file_generator(input_filenames, pattern)
     first_file = input_generator.next()
     
     directory_merger = DirectoryMerger(first_file, output_file)
@@ -233,6 +254,10 @@ def main():
                       help="output file")
     parser.add_option("-f", "--force", action="store_true",
                       help="overwrite output file if it exists. (default: no)")
+                      
+    parser.add_option("-P", "--pattern",
+                      help="Only merge files which contain this string (matches"
+                           " filenames inside tarfiles if processing tar files)")
 
     from sys import argv
     options, input_filenames = parser.parse_args(argv)
@@ -247,4 +272,4 @@ def main():
         raise RuntimeError("'%s' already exists. Use --force to overwrite"
                            % (output_name))
                            
-    merge_files(output_name, input_filenames)
+    merge_files(output_name, input_filenames, options.pattern)
