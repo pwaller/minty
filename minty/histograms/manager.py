@@ -35,7 +35,7 @@ def build_histogram_plain(name, title, binning):
     `binning` should be a list of tuples, describing the bins for each axis.
     """
     dimensions = len(binning)
-    TH = {1: R.TH1F, 2: R.TH2F, 3: R.TH3F}[dimensions]
+    TH = {1: R.TH1D, 2: R.TH2D, 3: R.TH3D}[dimensions]
     binning_args, fixup_axes = [], []
     
     AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
@@ -88,7 +88,7 @@ def build_histogram_sparse(name, title, binning):
                 "three long, or the first element must be 'var'")
 
     hname = name.split("/")[-1] # remove path from name
-    hist = R.THnSparseF(hname, title, dimensions, 
+    hist = R.THnSparseD(hname, title, dimensions, 
                         nbins, xmins, xmaxs)
                         
     for i, binning in fixup_axes:
