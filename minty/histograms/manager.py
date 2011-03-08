@@ -38,6 +38,9 @@ def build_histogram_plain(name, title, binning):
     TH = {1: R.TH1D, 2: R.TH2D, 3: R.TH3D}[dimensions]
     binning_args, fixup_axes = [], []
     
+    class VariableBins(list): pass
+    class NamedBins(list): pass
+    
     AXES_GETTERS = [R.TH1.GetXaxis, R.TH1.GetYaxis, R.TH1.GetZaxis]
     for bins, axis_getter in zip(binning, AXES_GETTERS):
         if len(bins) == 3:
@@ -48,8 +51,13 @@ def build_histogram_plain(name, title, binning):
                           variable_bins[0], 
                           variable_bins[-1])
             binning_args.extend(dummy_bins)
-            fixup_axes.append((axis_getter, variable_bins))
-        
+            fixup_axes.append((axis_getter, VariableBins(variable_bins)))
+            
+        elif bins[0] == "named" and all(isinstance(b, basestring) for b in bins):
+            bins = bins[1:]
+            binning_args = len(bins), 0, len(bins)
+            fixup_axes.append((axis_getter, NamedBins(bins)))
+            
         else:
             raise RuntimeError("A given set of bins should either be "
                 "three long, or the first element must be 'var' to "
@@ -58,7 +66,14 @@ def build_histogram_plain(name, title, binning):
     hname = name.split("/")[-1] # remove path from name
     hist = TH(hname, title, *binning_args)
     for fixup_axis, binning in fixup_axes:
-        fixup_axis(hist).Set(len(binning)-1, array("d", binning))
+        if isinstance(binning, VariableBins):
+            fixup_axis(hist).Set(len(binning)-1, array("d", binning))
+            
+        elif isinstance(binning, NamedBins):
+            for i, bin_name in enumerate(binning):
+                fixup_axis(hist).SetBinLabel(i+1, bin_name)
+        else:
+            raise NotImplementedError
         
     filler = hist.Fill
     return hist, filler
