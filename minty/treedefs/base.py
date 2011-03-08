@@ -321,7 +321,7 @@ class Photon(EGamma):
     @property
     def good_jet_quality(self):
         j = self.jet
-        return j is not None and j.emFraction < 0.95 or j.quality < 0.8
+        return j is None or j.emFraction < 0.95 or j.quality < 0.8
     
 class Electron(EGamma):
     __rootname__ = "el"
