@@ -26,6 +26,9 @@ class AnalysisBase(object):
         assert not AnalysisSingleton
         AnalysisSingleton = self
         
+        self.exception_count = 0
+        self.processed_files = len(list(input_tree.GetListOfFiles()))
+        
         self.options = options
         self.input_tree = egamma_wrap_tree(input_tree)
         self.info = self.input_tree._selarg
@@ -37,8 +40,6 @@ class AnalysisBase(object):
         self.histogram_manager = self.h = None
         
         self.current_run = self.previous_run = None
-        
-        self.exception_count = 0
         
         self.tasks = []
     
@@ -104,6 +105,7 @@ class AnalysisBase(object):
         log.info("Flushing data store..")
         hm = self.histogram_manager
         hm.write_parameter("exception_count", self.exception_count)
+        hm.write_parameter("processed_files", self.processed_files)
         hm.finalize()
         
     def finalize(self):
