@@ -142,9 +142,9 @@ class EGamma(Particle):
         run = self._event.RunNumber
         if run < 152166:
             # Sigh..
-            # Use most recent monte carlo map.
+            # Use most recent (PP! end of period I) monte carlo map.
             # In the future, use a weight.
-            run = 500000
+            run = 167844
         oq = self.oq_function(run, self.cl.eta, self.cl.phi)
         return oq < 3
     
