@@ -325,7 +325,7 @@ class Photon(EGamma):
         return j is None or j.emFraction < 0.95 or j.quality < 0.8
     
     @property
-    def v15_E_correction(self):
+    def v15_E_corrected(self):
         abs_eta = abs(self.etas2)
         if 0 <= abs_eta < 1.4:
             return self.E / (1. - 0.0096)
@@ -335,9 +335,6 @@ class Photon(EGamma):
             raise NotImplementedError
 
     def v15_vertex_correction(self, vertex_z):
-        e_correction = self.v15_E_correction
-        pt_corrected = self.pt * e_correction
-        E_corrected = self.E * e_correction
     
         if abs(self.etas1) < 1.5:
             R = self.v15_RZ_1stSampling_cscopt2
@@ -348,6 +345,9 @@ class Photon(EGamma):
             R = Z / sinh(self.etas1)
         
         eta_corrected = asinh((Z - vertex_z) / R)
+        
+        E_corrected = self.v15_E_corrected
+        pt_corrected = E_corrected / cosh(eta_corrected)
         
         return Fourvec_PtEtaPhiE(pt_corrected, eta_corrected, self.phi, E_corrected)
         
