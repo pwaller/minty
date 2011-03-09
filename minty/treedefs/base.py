@@ -1,6 +1,6 @@
 from logging import getLogger; log = getLogger("minty.treedefs")
 
-from math import tanh, cosh
+from math import tanh, cosh, sinh, asinh
 
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
@@ -129,6 +129,7 @@ class Jet(Fourvec_PtEtaPhiE):
     
 class EGamma(Particle):
     isEM = TI.float
+    etas1 = TI.float(naming(pau="etaS1"))
     etas2 = TI.float(naming(pau="etaS2"))
     
     author = TI.int
@@ -323,6 +324,60 @@ class Photon(EGamma):
         j = self.jet
         return j is None or j.emFraction < 0.95 or j.quality < 0.8
     
+    @property
+    def v15_E_correction(self):
+        abs_eta = abs(self.etas2)
+        if 0 <= abs_eta < 1.4:
+            return self.E / (1. - 0.0096)
+        elif 1.4 <= abs_eta < 2.5:
+            return self.E / (1. + 0.0189)
+        else:
+            raise NotImplementedError
+
+    def v15_vertex_correction(self, vertex_z):
+        e_correction = self.v15_E_correction
+        pt_corrected = self.pt * e_correction
+        E_corrected = self.E * e_correction
+    
+        if abs(self.etas1) < 1.5:
+            R = self.v15_RZ_1stSampling_cscopt2
+            Z = R * sinh(self.etas1)
+            
+        else:
+            Z = self.v15_RZ_1stSampling_cscopt2
+            R = Z / sinh(self.etas1)
+        
+        eta_corrected = asinh((Z - vertex_z) / R)
+        
+        return Fourvec_PtEtaPhiE(pt_corrected, eta_corrected, self.phi, E_corrected)
+        
+    @property
+    def v15_RZ_1stSampling_cscopt2(self):
+        # adapted from CaloDepthTool.cxx, double CaloDepthTool::cscopt2_parametrized(const CaloCell_ID::CaloSample sample,
+        #  const double eta, const double /*phi*/ )
+        # No warranty !!!
+
+        radius = -99999
+
+        aeta_1st_sampling = abs(self.etas1)
+
+        if aeta_1st_sampling < 1.5:
+            if aeta_1st_sampling < 0.8:
+                radius = 1558.859292 - 4.990838*aeta_1st_sampling - 21.144279*aeta_1st_sampling*aeta_1st_sampling
+            else:
+                radius = 1522.775373 + 27.970192*aeta_1st_sampling - 21.104108*aeta_1st_sampling*aeta_1st_sampling
+                
+        else:
+            if aeta_1st_sampling < 1.5:
+                radius = 12453.297448 - 5735.787116*aeta_1st_sampling
+            else:
+                radius = 3790.671754
+                
+            if eta_1st_sampling < 0.:
+                radius = -radius
+        
+        return radius
+        
 class Electron(EGamma):
     __rootname__ = "el"
     particle = "electron"
