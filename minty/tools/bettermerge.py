@@ -235,7 +235,11 @@ def merge_files(output_filename, input_filenames, pattern=None):
     output_file.SaveSelf(True)
     
     input_generator = root_file_generator(input_filenames, pattern)
-    first_file = input_generator.next()
+    try:
+        first_file = input_generator.next()
+    except StopIteration:
+        print "No files to merge!"
+        return 1
     
     directory_merger = DirectoryMerger(first_file, output_file)
     
@@ -244,6 +248,8 @@ def merge_files(output_filename, input_filenames, pattern=None):
             directory_merger.merge(input_file)
     finally:
         directory_merger.finish()
+    
+    return 0
 
 def main():
 
@@ -270,4 +276,4 @@ def main():
         raise RuntimeError("'%s' already exists. Use --force to overwrite"
                            % (output_name))
                            
-    merge_files(output_name, input_filenames, options.pattern)
+    return merge_files(output_name, input_filenames, options.pattern)
