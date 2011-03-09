@@ -209,8 +209,6 @@ from contextlib import closing
 from tarfile import open as tarfile_open
 from shutil import rmtree
 from tempfile import mkdtemp
-from mimetypes import guess_type
-ziptypes = set([('application/x-tar', 'gzip')])
 
 def try_tarfile(filename, pattern):
     with closing(tarfile_open(filename)) as tar:
@@ -226,7 +224,7 @@ def root_file_generator(filenames, pattern):
     for i, filename in enumerate(filenames):
         print "Complete:", i, "/", len(filenames), filename
         with timer("process file %i" % i):
-            if guess_type(filename) in ziptypes:
+            if ".tgz" in filename:
                 for f in try_tarfile(filename, pattern):
                     yield f
             else:
