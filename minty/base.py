@@ -27,7 +27,7 @@ class AnalysisBase(object):
         AnalysisSingleton = self
         
         self.exception_count = 0
-        self.processed_files = len(list(input_tree.GetListOfFiles()))
+        self.last_tree = 0
         
         self.options = options
         self.input_tree = egamma_wrap_tree(input_tree)
@@ -104,8 +104,15 @@ class AnalysisBase(object):
         """
         log.info("Flushing data store..")
         hm = self.histogram_manager
+        
         hm.write_parameter("exception_count", self.exception_count)
-        hm.write_parameter("processed_files", self.processed_files)
+        self.exception_count = 0
+        
+        this_tree = self.input_tree.tree.GetTreeNumber()
+        processed_trees = this_tree - self.last_tree
+        self.last_tree = this_tree
+        hm.write_parameter("processed_trees", processed_trees)
+        
         hm.finalize()
         
     def finalize(self):
