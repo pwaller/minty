@@ -373,7 +373,7 @@ class Photon(EGamma):
             else:
                 radius = 3790.671754
                 
-            if eta_1st_sampling < 0.:
+            if aeta_1st_sampling < 0.:
                 radius = -radius
         
         return radius
