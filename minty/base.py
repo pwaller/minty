@@ -67,8 +67,10 @@ class AnalysisBase(object):
         """
         Return a file that doesn't exist yet by appending numbers to the filename
         """
+        if not exists(name):
+            return name
         for i in xrange(300):
-            namepart = "%s-%i" % (name, i)
+            namepart = "%s.%i" % (name, i)
             if not exists(namepart):
                 return namepart
         
