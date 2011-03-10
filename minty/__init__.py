@@ -4,5 +4,8 @@ from .utils import init_root
 init_root()
 
 import ROOT as R
-R.PyConfig.IgnoreCommandLineOptions = True
+try:
+    R.PyConfig.IgnoreCommandLineOptions = True
+except Exception, x:
+    pass
 

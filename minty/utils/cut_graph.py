@@ -8,6 +8,7 @@
 
 
 from types import FunctionType, StringType, MethodType
+from os.path import join as pjoin
 
 NA = 0 # -1
 
@@ -60,7 +61,7 @@ class Histo(object):
         self.binning = list(b)
         self.kwargs = kwargs
 
-    def initialize(self, cuts, hm):
+    def initialize(self, dir, cuts, hm):
         # check that all histograms actually exist
         cut_dict = dict((cut.name, cut) for cut in cuts)
         for n in self.requirements + self.cross:
@@ -68,7 +69,7 @@ class Histo(object):
 
         # append cross-product cuts to the axes
         self.binning += [cut_dict[x].bins for x in self.cross]
-        self.filler = hm.get(self.name, b=self.binning, **self.kwargs)
+        self.filler = hm.get(pjoin(dir, self.name), b=self.binning, **self.kwargs)
 
     def fill(self, obj, event, cut_results):
         for x in self.requirements:
@@ -79,7 +80,7 @@ class Histo(object):
             val = (val,)
         val = list(val)
         val.extend(1.0 if cut_results[x] else 0.0 for x in self.cross)
-        self.filler(*val, w = event.event_weight)
+        self.filler(*val, **{"w": event.event_weight} )
 
 class CutGroup(object):
     def __init__(self, name, histogram_manager, container=None):
@@ -95,6 +96,10 @@ class CutGroup(object):
         self.sg = {}
         self.cuts = []
         self.hist = []
+
+    @property
+    def cut_names(self):
+        return [c.name for c in self.cuts]
 
     def __call__(self, obj):
         if isinstance(obj, Cut):
@@ -114,15 +119,17 @@ class CutGroup(object):
 
     def initialize(self, super_cuts=()):
         """Setup the CutGroup"""
+        print "initialize %s with super_cuts %s" % (self.name, str(super_cuts))
         self._cut_functions = [(cut.name, cut.cut) for cut in self.cuts]
         cut_names = [cut.name for cut in self.cuts if not cut.dummy]
         title = "cuts;%s;" % (";".join(cut_names))
         print "setting up ndim histogram crossing : %s" % cut_names
-        self(Histo("%s/cuts" % self.name, lambda e : (), b=(), t=title, cross=cut_names))
+        self(Histo("cuts", lambda e : (), b=(), t=title, cross=cut_names))
 
         for h in self.hist:
-            h.initialize(self.cuts, self.hm)
+            h.initialize(self.name, self.cuts + list(super_cuts), self.hm)
         for sg in self.subgroups:
+            print "subgroup %s with super_cuts %s" % (sg.name, str(self.cuts + list(super_cuts)))
             sg.initialize(self.cuts + list(super_cuts))
 
     def evaluate(self, obj, event):

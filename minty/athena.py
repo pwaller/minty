@@ -14,11 +14,11 @@ from minty.metadata import TallyManager
 
 def athena_setup(input = None, max_events = None):
     # use closest DB replica
-    from AthenaCommon.AppMgr import ServiceMgr
-    from PoolSvc.PoolSvcConf import PoolSvc
-    ServiceMgr+=PoolSvc(SortReplicas=True)
-    from DBReplicaSvc.DBReplicaSvcConf import DBReplicaSvc
-    ServiceMgr+=DBReplicaSvc(UseCOOLSQLite=False)
+    #from AthenaCommon.AppMgr import ServiceMgr
+    #from PoolSvc.PoolSvcConf import PoolSvc
+    #ServiceMgr+=PoolSvc(SortReplicas=True)
+    #from DBReplicaSvc.DBReplicaSvcConf import DBReplicaSvc
+    #ServiceMgr+=DBReplicaSvc(UseCOOLSQLite=False)
     #ServiceMgr+=DBReplicaSvc(UseCOOLSQLite=True)
 
     # This import makes Athena read Pool files.
@@ -26,6 +26,7 @@ def athena_setup(input = None, max_events = None):
 
     # setup autoconfiguration to deal also with DAODs
     from RecExConfig.RecFlags import rec
+    #rec.doApplyAODFix.set_Value_and_Lock(False) ## Uncomment for data from v15 skimmed with v16
     rec.readRDO.set_Value_and_Lock(False)
     rec.readESD.set_Value_and_Lock(False)
     rec.readAOD.set_Value_and_Lock(True)
@@ -50,14 +51,27 @@ def athena_setup(input = None, max_events = None):
         athenaCommonFlags.EvtMax = max_events
 
 
-
 def setup_pool_skim(filename, accept_algs, type="AOD"):
     from OutputStreamAthenaPool.MultipleStreamManager import MSMgr
     from PrimaryDPDMaker import PrimaryDPD_OutputDefinitions as dpdOutput
-    stream_name = "StreamD2%sM_MINTY" % type
+    stream_name = "StreamD%s" % (type)
     stream = MSMgr.NewPoolStream(stream_name, filename)
     stream.AcceptAlgs( accept_algs )
-    dpdOutput.addAllItemsFromInputExceptExcludeList( stream_name, [] )
+    dpdOutput.addAllItemsFromInputExceptExcludeList( stream_name, [])
+    if False:
+        dpdOutput.addBasicOutput(stream_name)
+        dpdOutput.addBasicPhysics(stream_name)
+        dpdOutput.addCalorimeter(stream_name)
+        dpdOutput.addEGamma(stream_name)
+        dpdOutput.addInnerDetectorPrepRawData(stream_name)
+        dpdOutput.addMissingEt(stream_name)
+        dpdOutput.addMuons(stream_name)
+        dpdOutput.addPerfLite(stream_name)
+        dpdOutput.addTau(stream_name)
+        dpdOutput.addTrackParticles(stream_name)
+        dpdOutput.addTracks(stream_name)
+        dpdOutput.addTrigger(stream_name)
+        dpdOutput.addTruth(stream_name)
 
 class DropEvent(Exception):
     pass
@@ -70,6 +84,8 @@ class AnalysisAlgorithm(PyAthena.Alg):
         self.exception_count = 0
         self.event_info_key = None
         self.is_mc = None
+        self.do_cosmics = False
+        self._skim_filter = None
         self.tasks = []
         if "grl_path" in options:
             self.grl = GRL(options["grl_path"])
@@ -88,6 +104,9 @@ class AnalysisAlgorithm(PyAthena.Alg):
 
     def init(self):
         pass
+
+    def setSkimFilter(self, func):
+        self._skim_filter = func
 
     @property
     @event_cache
@@ -134,9 +153,12 @@ class AnalysisAlgorithm(PyAthena.Alg):
         # note that "self" is named "event" here for semantic reasons
         log.debug("Executing Minty")
         event.load_event_info()
+        event.setFilterPassed(False)
         try:
             for task in event.tasks:
                 task(event)
+            if event._skim_filter:
+                event.setFilterPassed(event._skim_filter(event))
             event_cache.invalidate()
         except DropEvent:
             pass

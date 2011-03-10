@@ -65,6 +65,7 @@ def build_histogram_plain(name, title, binning):
     
     hname = name.split("/")[-1] # remove path from name
     hist = TH(hname, title, *binning_args)
+    hist.Sumw2()
     for fixup_axis, binning in fixup_axes:
         if isinstance(binning, VariableBins):
             fixup_axis(hist).Set(len(binning)-1, array("d", binning))
@@ -105,6 +106,12 @@ def build_histogram_sparse(name, title, binning):
     hname = name.split("/")[-1] # remove path from name
     hist = R.THnSparseD(hname, title, dimensions, 
                         nbins, xmins, xmaxs)
+    hist.Sumw2()
+
+    # manual name setting necessary for v15 root
+    for d, n in zip(range(dimensions), title.split(";")[1:]):
+        hist.GetAxis(d).SetName(n)
+        hist.GetAxis(d).SetTitle(n)
                         
     for i, binning in fixup_axes:
         hist.GetAxis(i).Set(len(binning)-1, array("d", binning))
