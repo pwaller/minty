@@ -3,8 +3,6 @@ from pkg_resources import resource_filename
 
 from inspect import stack, getmodule
 
-from pprint import pprint
-
 def get_caller_module():
     """
     Returns the module from which the caller of this function was called.
