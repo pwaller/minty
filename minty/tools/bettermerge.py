@@ -5,6 +5,7 @@ from IPython.Shell import IPShellEmbed; ip = IPShellEmbed(["-pdb"])
 
 from collections import namedtuple
 from contextlib import contextmanager, closing
+from cPickle import dumps, loads, UnpicklingError
 from gc import collect, get_count, get_objects
 from optparse import OptionParser
 from os.path import exists
@@ -15,7 +16,7 @@ from time import time
 
 import ROOT as R; R.kTRUE
 from ROOT import gROOT, gSystem
-from ROOT import TTree, TTreeCloner, kTRUE, kFALSE
+from ROOT import TTree, TTreeCloner, kTRUE, kFALSE, TObjString
 
 
 
@@ -185,7 +186,7 @@ class DefaultMerger(object):
     def merge(self, next_object):
         raise NotImplementedError()
         
-    def finish(self):
+    def finish(self, key_name):
         self.merged_object.Write()
 
 
@@ -218,6 +219,40 @@ class ParameterMerger(DefaultMerger):
     def merge(self, next_object):
         new_value = self.merged_object.GetVal() + next_object.GetVal()
         self.merged_object.SetVal(new_value)
+
+@define_merger(R.TObjString)
+class PickledStringMerger(DefaultMerger):
+
+    pyobject_merge_registry = {
+        set: set.union,
+        list: list.__add__,
+        str: str.__add__,
+        unicode: unicode.__add__,
+    }
+    
+    def unpickle_string(self, string):
+        return loads(string.GetName())
+
+    def __init__(self, first_object, target_directory):
+        self.merged_object = self.unpickle_string(first_object)
+        t = type(self.merged_object)
+        self.merger_function = self.pyobject_merge_registry.get(t)
+        if not self.merger_function:
+            raise RuntimeError("I don't know how to merge objects of type %r" % t)
+        
+    def merge(self, next_object):
+        do_merge = self.merger_function
+        next_object = self.unpickle_string(next_object)
+        self.merged_object = do_merge(self.merged_object, next_object)
+        #UnpicklingError
+        #new_value = self.merged_object.GetVal() + next_object.GetVal()
+        #self.merged_object.SetVal(new_value)
+
+
+    def finish(self, key_name):
+        self.merged_object = TObjString(dumps(self.merged_object))
+        self.merged_object.Write(key_name)
+        #super(PickledStringMerger, self).finish()
 
 @define_merger(R.TTree)
 class TreeMerger(DefaultMerger):
@@ -306,13 +341,13 @@ class DirectoryMerger(DefaultMerger):
             del new_keys
             collect()
     
-    def finish(self):
+    def finish(self, key_name=None):
         with root_directory(self.merged_object):
-            for keyname, merger in sorted(self.contents.iteritems()):
+            for this_key_name, merger in sorted(self.contents.iteritems()):
                 if not merger:
                     # An unsupported class.
                     continue
-                merger.finish()
+                merger.finish(this_key_name)
 
 def try_tarfile(filename, pattern):
     with closing(tarfile_open(filename)) as tar:
