@@ -42,6 +42,7 @@ class AnalysisBase(object):
         self.current_run = self.previous_run = None
         
         self.tasks = []
+        self.stopwatch = R.TStopWatch()
     
     def setup_grl(self, options):
         if options.grl_path:
@@ -114,6 +115,11 @@ class AnalysisBase(object):
         processed_trees = this_tree - self.last_tree
         self.last_tree = this_tree
         hm.write_parameter("processed_trees", processed_trees)
+        hm.write_parameter("jobs_runs", 1)
+        
+        hm.write_parameter("walltime", self.stopwatch.RealTime())
+        hm.write_parameter("cputime", self.stopwatch.CpulTime())
+        self.stopwatch.Start()
         
         hm.finalize()
         
