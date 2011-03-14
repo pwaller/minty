@@ -1,4 +1,5 @@
 from array import array
+from cPickle import dumps
 
 from logging import getLogger; log = getLogger("minty.histograms.manager")
 
@@ -171,6 +172,9 @@ class HistogramManager(object):
             else:
                 self.file.WriteObject(obj, name, "")
 
+    def write_object(self, name, what):
+        self[name] = R.TObjString(dumps(what))
+
     def write_parameter(self, name, value):
         self[name] = R.TParameter(type(value))(name, value)
 
@@ -243,4 +247,11 @@ class AthenaHistogramManager(HistogramManager):
             self.hsvc["/".join(("minty",self.resultname, name))] = histogram
 
 
-        
+if __name__ == "__main__":
+    
+    hm = HistogramManager("test.root")
+    hm.write_object("test_set", set("abcd"))
+    hm.write_object("test_list", ["abcd"])
+    hm.write_object("test_str", "abcd")
+    hm.finalize()
+    
