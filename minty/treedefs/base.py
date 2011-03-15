@@ -266,6 +266,8 @@ class Photon(EGamma):
     
     L1_e = TI.float(naming(pau="L1_e"))
     
+    L1_matchPass = TI.int
+    L2_matchPass = TI.int
     EF_matchPass = TI.int
     
     oq_function = check_photon

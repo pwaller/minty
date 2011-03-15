@@ -1,3 +1,4 @@
+from itertools import izip
 from logging import getLogger; log = getLogger("minty.treedefs")
 
 from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex, 
@@ -13,9 +14,29 @@ def get_pau_trigger_indices(t):
 
 def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
-    class PassEF(object):
+    class PassTrigger(object):
         ph = TI.int
-    tt.add_list(PassEF, "PassEF", 100, **kwargs)
+        
+    tt.add_list(PassTrigger, "PassL1", 100, **kwargs)
+    tt.add_list(PassTrigger, "PassL2", 100, **kwargs)
+    tt.add_list(PassTrigger, "PassEF", 100, **kwargs)
+    
+    class TriggerL1(Trigger): pass
+    class TriggerL2(Trigger): pass
+    class TriggerEF(Trigger): pass
+    
+    def setup_trigger_getter_ph(T, what, trig_index, trig_name):
+        
+        this_trigger = getattr(tt, "Pass" + what)[trig_index]        
+        setattr(T, trig_name, property(lambda _, t=this_trigger: t.ph))
+        
+        ph_insts = tt.photons_list._instances
+        getters = [getattr(type(ph), "%s_matchPass" % what).fget for ph in ph_insts]
+        trig_bit = 0x1 << trig_index
+        def trigger_objs_func(_, trig_bit=trig_bit, tt=tt, getters=getters):
+            phs = izip(tt.photons, getters)
+            return [p for p, matchPass in phs if not (matchPass(p) & trig_bit)]
+        setattr(T, trig_name + "_photons", property(trigger_objs_func))
     
     log.info("Photon trigger indices:")
     for trig_index, trig_name in get_pau_trigger_indices(t):
@@ -23,13 +44,11 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
         if trig_name[0].isdigit():
             trig_name = "_" + trig_name
     
-        def trigger_func(_, trig_index=trig_index):
-            return tt.PassEF[trig_index].ph
-        setattr(Trigger, trig_name, property(trigger_func))
-        trig_bit = 0x1 << trig_index
-        def trigger_objs_func(_, trig_bit=trig_bit, tt=tt):
-            return [p for p in tt.photons if p.EF_matchPass & trig_bit]
-        setattr(Trigger, trig_name + "_objects", property(trigger_objs_func))
+        setup_trigger_getter_ph(TriggerL1, "L1", trig_index, trig_name)
+        setup_trigger_getter_ph(TriggerL2, "L2", trig_index, trig_name)
+        setup_trigger_getter_ph(TriggerEF, "EF", trig_index, trig_name)
+    
+    return TriggerL1, TriggerL2, TriggerEF
 
 def egamma_wrap_tree(t):
     
@@ -41,18 +60,10 @@ def egamma_wrap_tree(t):
     
     tt = make_wrapper(t, selarg=selarg)
     
+    
     kwargs = dict(create=False, warnmissing=True)
     
     tt.add(Global)
-    
-    if selarg.tuple_type == "pau":   
-       setup_pau_trigger_info(t, tt, Trigger, **kwargs)
-    
-    tt.add(Trigger, "EF", **kwargs)
-    
-    # Note that the L2 code is currently broken since we modify the `Trigger`
-    # class for PAU.
-    # tt.add(Trigger, "L2", **kwargs)
     
     tt.add_list(Vertex,      "vertices",      300, **kwargs)
     
@@ -60,5 +71,16 @@ def egamma_wrap_tree(t):
     tt.add_list(Jet,         "jets",          400, **kwargs)
     tt.add_list(Electron,    "electrons",     400, **kwargs)
     tt.add_list(TruthPhoton, "true_photons",  400, **kwargs)
+    
+    if selarg.tuple_type == "pau":   
+        trigger_classes = setup_pau_trigger_info(t, tt, Trigger, **kwargs)
+        TriggerL1, TriggerL2, TriggerEF = trigger_classes
+    else:
+        TriggerL1 = TriggerL2 = TriggerEF = Trigger
+        
+    tt.add(TriggerL1, "L1", **kwargs)
+    tt.add(TriggerL2, "L2", **kwargs)
+    tt.add(TriggerEF, "EF", **kwargs)
+    
         
     return tt
