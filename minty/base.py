@@ -31,6 +31,9 @@ class AnalysisBase(object):
         
         self.options = options
         self.input_tree = egamma_wrap_tree(input_tree)
+        # Save a few attribute lookups since this is on the critical path
+        get_tree = self.input_tree.tree.GetTree
+        type(self).root_tree = property(lambda s: get_tree())
         self.info = self.input_tree._selarg
         
         self.setup_grl(options)
@@ -39,10 +42,10 @@ class AnalysisBase(object):
         self.result_name = options.output
         self.histogram_manager = self.h = None
         
-        self.current_run = self.previous_run = None
+        self.current_tree = self.current_run = self.previous_run = None
         
         self.tasks = []
-        self.stopwatch = R.TStopWatch()
+        self.stopwatch = R.TStopwatch()
     
     def setup_grl(self, options):
         if options.grl_path:
@@ -112,19 +115,22 @@ class AnalysisBase(object):
         self.exception_count = 0
         
         this_tree = self.input_tree.tree.GetTreeNumber()
-        processed_trees = this_tree - self.last_tree
+        processed_trees = this_tree - self.last_tree + 1
         self.last_tree = this_tree
         hm.write_parameter("processed_trees", processed_trees)
-        hm.write_parameter("jobs_runs", 1)
+        hm.write_parameter("jobs_files", 1)
         
         hm.write_parameter("walltime", self.stopwatch.RealTime())
-        hm.write_parameter("cputime", self.stopwatch.CpulTime())
+        hm.write_parameter("cputime", self.stopwatch.CpuTime())
         self.stopwatch.Start()
         
         hm.finalize()
         
     def finalize(self):
         self.flush()
+        
+    def new_tree(self):
+        pass
         
     def event(self, idx, event):
         event.index = idx
@@ -134,6 +140,11 @@ class AnalysisBase(object):
             self.period, (_, _) = period_from_run(self.current_run)
             self.init_result_store(self.period, self.current_run)
             
+        tree = self.root_tree
+        if self.current_tree != tree:
+            self.new_tree()
+            self.current_tree = tree
+        
         try:
             for task in self.tasks:
                 task(self, event)
