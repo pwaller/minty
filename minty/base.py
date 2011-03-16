@@ -26,7 +26,6 @@ class AnalysisBase(object):
         assert not AnalysisSingleton
         AnalysisSingleton = self
         
-        self.exception_count = 0
         self.last_tree = 0
         
         self.options = options
@@ -46,6 +45,8 @@ class AnalysisBase(object):
         
         self.tasks = []
         self.stopwatch = R.TStopwatch()
+        
+        self.initialize_counters()
     
     def setup_grl(self, options):
         if options.grl_path:
@@ -101,9 +102,11 @@ class AnalysisBase(object):
             
         result_name = self.get_unused_filename(result_name)
         self.histogram_manager = self.h = HistogramManager(result_name)
-        self.exception_count = 0
-        
     
+    def initialize_counters(self):
+        self.exception_count = 0
+        self.stopwatch.Start()
+            
     def flush(self):
         """
         Write analysis result to disk
@@ -112,8 +115,7 @@ class AnalysisBase(object):
         hm = self.histogram_manager
         
         hm.write_parameter("exception_count", self.exception_count)
-        self.exception_count = 0
-        
+                
         this_tree = self.input_tree.tree.GetTreeNumber()
         processed_trees = this_tree - self.last_tree + 1
         self.last_tree = this_tree
@@ -122,9 +124,9 @@ class AnalysisBase(object):
         
         hm.write_parameter("walltime", self.stopwatch.RealTime())
         hm.write_parameter("cputime", self.stopwatch.CpuTime())
-        self.stopwatch.Start()
         
         hm.finalize()
+        self.initialize_counters()
         
     def finalize(self):
         self.flush()
