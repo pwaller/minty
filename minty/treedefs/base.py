@@ -331,10 +331,10 @@ class Photon(EGamma):
         abs_eta = abs(self.etas2)
         if 0 <= abs_eta < 1.4:
             return self.E / (1. - 0.0096)
-        elif 1.4 <= abs_eta < 2.5:
+        else: #if 1.4 <= abs_eta < 2.5:
             return self.E / (1. + 0.0189)
-        else:
-            raise NotImplementedError
+        #else:
+            #raise NotImplementedError
 
     def v15_vertex_correction(self, vertex_z):
     
