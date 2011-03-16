@@ -26,6 +26,8 @@ class AnalysisBase(object):
         assert not AnalysisSingleton
         AnalysisSingleton = self
         
+        self.specific_events = options.events
+        
         self.last_tree = 0
         
         self.options = options
@@ -170,6 +172,17 @@ class AnalysisBase(object):
         self.previous_run = self.current_run
         
     def run(self):
+        if self.specific_events:
+            events = len(self.specific_events)
+            log.info("Processing %i specific events..", events)
+            with timer("perform analysis loop") as t:
+                for i in self.specific_events:
+                    self.input_tree.GetEntry(i)
+                    self.event(i, self.input_tree)
+            args = events, events / t.elapsed
+            log.info("Looped over %i events at %.2f events/sec" % args)
+            return
+        
         events = min(self.input_tree.tree.GetEntries(), self.options.limit)
         log.info("Will process %i events." % events)
         with timer("perform analysis loop") as t:

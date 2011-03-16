@@ -52,6 +52,7 @@ def parse_options(argv):
     p.add_option("-o", "--output", type=str, default="output.root")
     p.add_option("-s", "--obj-selection", type=str)
     p.add_option("--max-exception-count", type=int, default=10)
+    p.add_option("--events", action="append", type=int, default=None)
     
     options, args = p.parse_args(argv)
     files = args[1:]
