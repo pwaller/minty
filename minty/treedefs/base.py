@@ -375,7 +375,7 @@ class Photon(EGamma):
             else:
                 radius = 3790.671754
                 
-            if aeta_1st_sampling < 0.:
+            if self.etas1 < 0.:
                 radius = -radius
         
         return radius
