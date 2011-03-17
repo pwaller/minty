@@ -53,6 +53,7 @@ def parse_options(argv):
     p.add_option("-s", "--obj-selection", type=str)
     p.add_option("--max-exception-count", type=int, default=10)
     p.add_option("--events", action="append", type=int, default=None)
+    p.add_option("--v16", action="store_true")
     
     options, args = p.parse_args(argv)
     files = args[1:]

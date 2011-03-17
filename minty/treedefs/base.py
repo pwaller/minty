@@ -8,6 +8,7 @@ from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
 
 from PhotonIDTool import PhotonIDTool
 from OQMaps import check_photon, check_electron
+from EnergyRescalerTool import v16_E_correction
 
 import ROOT as R
 
@@ -135,7 +136,11 @@ class EGamma(Particle):
     author = TI.int
     
     oq_function = None # Populated by child classes
-    _event = None # Populated by AnalysisBase.setup_objects
+    
+    # Populated by AnalysisBase.setup_objects
+    _part_type = None
+    _event = None 
+    _v16_energy_rescaler = None
     
     @property
     @event_cache
@@ -259,6 +264,10 @@ class Photon(EGamma):
     __rootname__ = "ph"
     particle = "photon"
     
+    @property
+    def _part_type(self):
+        return "CONVERTED_PHOTON" if self.isConv else "UNCONVERTED_PHOTON"
+    
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
     imatchRecJet = TI.float(naming(pau="imatchRecJet"))
@@ -326,6 +335,21 @@ class Photon(EGamma):
         j = self.jet
         return j is None or j.emFraction < 0.95 or j.quality < 0.8
     
+    def v16_E_corrected(self, n=0):
+        # For electrons:
+        #et = cl_e/cosh(trk_eta) if (nSCT + nPix) >= 4) otherwise  et = cl_et 
+        
+        cl = self.cl
+        E, phi = cl.E, cl.phi
+        etas2 = self.etas2
+        cl_et = cl.E / cosh(etas2)
+        aEC = self._v16_energy_rescaler.applyEnergyCorrection
+        return aEC(etas2, phi, E, cl_et, n, self._part_type)
+        
+    def v16_corrections(self):
+        E_corrected = self.v16_E_corrected()
+        return Fourvec_PtEtaPhiE(self.cl.pt, self.etas1, self.phi, E_corrected)
+    
     @property
     def v15_E_corrected(self):
         abs_eta = abs(self.etas2)
@@ -336,7 +360,7 @@ class Photon(EGamma):
         #else:
             #raise NotImplementedError
 
-    def v15_vertex_correction(self, vertex_z):
+    def v15_corrections(self, vertex_z):
     
         if abs(self.etas1) < 1.5:
             R = self.v15_RZ_1stSampling_cscopt2
@@ -383,6 +407,7 @@ class Photon(EGamma):
 class Electron(EGamma):
     __rootname__ = "el"
     particle = "electron"
+    _part_type = "ELECTRON"
     
     oq_function = check_electron
 

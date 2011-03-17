@@ -6,6 +6,8 @@ from os.path import exists
 
 import ROOT as R
 
+from EnergyRescalerTool import EnergyRescaler
+
 from minty.utils import timer, event_cache
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
@@ -49,6 +51,7 @@ class AnalysisBase(object):
         self.stopwatch = R.TStopwatch()
         
         self.initialize_counters()
+        self.release_16 = options.v16
     
     def setup_grl(self, options):
         if options.grl_path:
@@ -65,6 +68,8 @@ class AnalysisBase(object):
         tree = self.input_tree
         from treedefs.base import EGamma, TruthPhoton
         TruthPhoton._event = EGamma._event = self.input_tree
+        EGamma._v16_energy_rescaler = EnergyRescaler()
+        EGamma._v16_energy_rescaler.useDefaultCalibConstants()
         
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
