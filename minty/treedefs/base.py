@@ -19,6 +19,8 @@ from ..external.robustIsEMDefs import (
     isRobustMedium as isRobustMedium_electron,
     isRobusterTight as isRobusterTight_electron)
 
+AmbiguityResolution_Photon = 23
+
 @property
 def raise_not_implemented(self):
     "When this property is accessed, an error is raised"
@@ -298,8 +300,33 @@ class Photon(EGamma):
     
     @property
     @event_cache
-    def robust_tight(self):
+    def _robust_tight(self):
         return self.robust_idtool.PhotonCutsTight(3)
+        
+    @property
+    def _robust_loose(self):
+        return self.robust_idtool.PhotonCutsLoose2()
+        
+    @property
+    def ambiguity_resolved(self):
+        return not (self.isEM & AmbiguityResolution_Photon)
+        
+    @property
+    def robust_loose_ar(self):
+        return self.ambiguity_resolved and self._robust_loose
+        
+    @property
+    def robust_tight_ar(self):
+        return self.ambiguity_resolved and self._robust_tight
+    
+    @classmethod
+    def configure_release_dependant_pid(cls, v16):
+        """
+        Release dependent loose
+        """
+        if v16:
+            cls.loose = cls.robust_loose_ar
+        cls.robust_tight = cls.robust_tight_ar if v16 else cls._robust_tight
     
     @property
     @event_cache

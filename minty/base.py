@@ -28,12 +28,13 @@ class AnalysisBase(object):
         assert not AnalysisSingleton
         AnalysisSingleton = self
         
+        self.release_16 = options.v16
         self.specific_events = options.events
         
         self.last_tree = 0
         
         self.options = options
-        self.input_tree = egamma_wrap_tree(input_tree)
+        self.input_tree = egamma_wrap_tree(input_tree, v16=self.release_16)
         # Save a few attribute lookups since this is on the critical path
         get_tree = self.input_tree.tree.GetTree
         type(self).root_tree = property(lambda s: get_tree())
@@ -51,7 +52,6 @@ class AnalysisBase(object):
         self.stopwatch = R.TStopwatch()
         
         self.initialize_counters()
-        self.release_16 = options.v16
     
     def setup_grl(self, options):
         if options.grl_path:

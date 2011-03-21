@@ -50,7 +50,7 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
     return TriggerL1, TriggerL2, TriggerEF
 
-def egamma_wrap_tree(t):
+def egamma_wrap_tree(t, v16=False):
     
     leafset = set(l.GetName() for l in t.GetListOfLeaves())
     
@@ -82,5 +82,6 @@ def egamma_wrap_tree(t):
     tt.add(TriggerL2, "L2", **kwargs)
     tt.add(TriggerEF, "EF", **kwargs)
     
+    Photon.configure_release_dependant_pid(v16)
         
     return tt
