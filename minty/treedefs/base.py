@@ -375,7 +375,9 @@ class Photon(EGamma):
         
     def v16_corrections(self):
         E_corrected = self.v16_E_corrected()
-        return Fourvec_PtEtaPhiE(self.cl.pt, self.etas1, self.phi, E_corrected)
+        v = Fourvec_PtEtaPhiE(self.cl.pt, self.etas1, self.phi, E_corrected)
+        v.isConv = self.isConv
+        return v
     
     @property
     def v15_E_corrected(self):
@@ -402,7 +404,9 @@ class Photon(EGamma):
         E_corrected = self.v15_E_corrected
         pt_corrected = E_corrected / cosh(eta_corrected)
         
-        return Fourvec_PtEtaPhiE(pt_corrected, eta_corrected, self.phi, E_corrected)
+        v = Fourvec_PtEtaPhiE(pt_corrected, eta_corrected, self.phi, E_corrected)
+        v.isConv = self.isConv
+        return v
         
     @property
     def v15_RZ_1stSampling_cscopt2(self):
