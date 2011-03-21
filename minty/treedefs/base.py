@@ -345,10 +345,13 @@ class Photon(EGamma):
         return self.robust_idtool.isEM(3)
         
     @property
+    def pass_fiducial_eta(self):
+        return abs(self.etas2) < 1.37 or 1.52 < abs(self.etas2) < 2.37
+        
+    @property
     @event_cache
-    def pass_fiducial(self):
-        return (self.cl.pt >= 25000 and 
-                (abs(self.etas2) < 1.37 or 1.52 < abs(self.etas2) < 2.37))
+    def pass_fiducial_pt(self):
+        return self.cl.pt >= 25000
 
     @property
     def jet(self):
