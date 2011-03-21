@@ -152,7 +152,7 @@ class EGamma(Particle):
             # Sigh..
             # Use most recent (PP! end of period I) monte carlo map.
             # In the future, use a weight.
-            run = 167844
+            run = 166466
         oq = self.oq_function(run, self.cl.eta, self.cl.phi)
         return oq < 3
     
@@ -348,7 +348,7 @@ class Photon(EGamma):
     @event_cache
     def pass_fiducial(self):
         return (self.cl.pt >= 25000 and 
-                (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.37))        
+                (abs(self.etas2) < 1.37 or 1.52 < abs(self.etas2) < 2.37))
 
     @property
     def jet(self):
