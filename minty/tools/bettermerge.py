@@ -18,6 +18,10 @@ import ROOT as R; R.kTRUE
 from ROOT import gROOT, gSystem
 from ROOT import TTree, TTreeCloner, kTRUE, kFALSE, TObjString
 
+class UnableToMerge(Exception):
+    """
+    Raised when merging isn't possible
+    """
 
 
 ## Copy Entries of a tree with the help of a TTreeCloner. Adapted from ROOT 5.28
@@ -234,7 +238,10 @@ class PickledStringMerger(DefaultMerger):
     }
     
     def unpickle_string(self, string):
-        return loads(string.GetName())
+        try:
+            return loads(string.GetName())
+        except UnpicklingError:
+            raise UnableToMerge
 
     def __init__(self, first_object, target_directory):
         self.merged_object = self.unpickle_string(first_object)
@@ -245,7 +252,11 @@ class PickledStringMerger(DefaultMerger):
         
     def merge(self, next_object):
         do_merge = self.merger_function
-        next_object = self.unpickle_string(next_object)
+        try:
+            next_object = self.unpickle_string(next_object)
+        except UnpicklingError:
+            # Silently ignore non-python strings
+            return
         self.merged_object = do_merge(self.merged_object, next_object)
         #UnpicklingError
         #new_value = self.merged_object.GetVal() + next_object.GetVal()
@@ -301,8 +312,11 @@ class DirectoryMerger(DefaultMerger):
         if name in self.contents:
             # We already know how to deal with this key
             merger = self.contents[name]
-            if merger:
-                merger.merge(key.ReadObj())
+            try:
+                if merger:
+                    merger.merge(key.ReadObj())
+            except UnableToMerge:
+                pass
             return 
             
         KeyClass = get_key_class(key)
@@ -315,12 +329,13 @@ class DirectoryMerger(DefaultMerger):
                 merger = DirectoryMerger(original_directory, new_target_directory)
         else:
             MergerClass = getattr(KeyClass, "_py_merger", None)
-            if MergerClass:
-                merger = MergerClass(key.ReadObj(), self.merged_object)
-            else:
-                # TODO: Record classes we're incapable of merging
-                self.contents[name] = None
-                return
+            merger = None
+            try:
+                if MergerClass:
+                    merger = MergerClass(key.ReadObj(), self.merged_object)
+            except UnableToMerge:
+                # Silently ignore objects we can't merge
+                pass
             
         self.contents[name] = merger
     
