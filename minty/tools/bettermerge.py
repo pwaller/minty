@@ -132,8 +132,11 @@ def root_directory(directory):
 
 def get_key_class(key):
     class_name = key.GetClassName()
-    class_object = getattr(R, class_name)
-    return class_object
+    try:
+        class_object = getattr(R, class_name)
+        return class_object
+    except AttributeError:
+        return None
     
 def most_recent_cycle_keys(directory):
     """
