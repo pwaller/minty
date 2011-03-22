@@ -321,7 +321,7 @@ class DirectoryMerger(DefaultMerger):
             
         KeyClass = get_key_class(key)
         
-        if issubclass(KeyClass, R.TDirectory):
+        if KeyClass and issubclass(KeyClass, R.TDirectory):
             # Create the target subdirectory and run the merge
             original_directory = key.ReadObj()
             with root_directory(self.merged_object):
