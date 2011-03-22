@@ -6,20 +6,18 @@ from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex,
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
 
-def get_pau_trigger_indices(t):
-    if not t.GetBranch("TriggersRun_ph"):
-        return []
-    t.GetEntry(0)
-    return list(enumerate(t.TriggersRun_ph))
-
 def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
-    class PassTrigger(object):
+    class PassTriggerPH(object):
         ph = TI.int
         
-    tt.add_list(PassTrigger, "PassL1", 100, **kwargs)
-    tt.add_list(PassTrigger, "PassL2", 100, **kwargs)
-    tt.add_list(PassTrigger, "PassEF", 100, **kwargs)
+    class PassTriggerEL(object):
+        el = TI.int
+        
+    for name, T in [("ph", PassTriggerPH), ("el", PassTriggerEL)]:
+        tt.add_list(T, "PassL1%s" % name, 100, rootname="PassL1", **kwargs)
+        tt.add_list(T, "PassL2%s" % name, 100, rootname="PassL2", **kwargs)
+        tt.add_list(T, "PassEF%s" % name, 100, rootname="PassEF", **kwargs)
     
     class TriggerL1(Trigger): pass
     class TriggerL2(Trigger): pass
@@ -27,7 +25,7 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
     def setup_trigger_getter_ph(T, what, trig_index, trig_name):
         
-        this_trigger = getattr(tt, "Pass" + what)[trig_index]        
+        this_trigger = getattr(tt, "Pass%sph" % what)[trig_index]
         setattr(T, trig_name, property(lambda _, t=this_trigger: t.ph))
         
         ph_insts = tt.photons_list._instances
@@ -37,9 +35,22 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
             phs = izip(tt.photons, getters)
             return [p for p, matchPass in phs if not (matchPass(p) & trig_bit)]
         setattr(T, trig_name + "_photons", property(trigger_objs_func))
+        
+    def setup_trigger_getter_el(T, what, trig_index, trig_name):
+        this_trigger = getattr(tt, "Pass%sel" % what)[trig_index]
+        setattr(T, trig_name, property(lambda _, t=this_trigger: t.el))
+    
+    t.GetEntry(0)
+    if not t.GetBranch("TriggersRun_ph"):
+        el_trig_indices = ph_trig_indices = []
+    else:
+        ph_trig_indices = list(enumerate(t.TriggersRun_ph))
+        el_trig_indices = list(enumerate(t.TriggersRun_el))
+    
+    print ph_trig_indices, el_trig_indices
     
     log.info("Photon trigger indices:")
-    for trig_index, trig_name in get_pau_trigger_indices(t):
+    for trig_index, trig_name in ph_trig_indices:
         log.info("  %2i = %s", trig_index, trig_name)
         if trig_name[0].isdigit():
             trig_name = "_" + trig_name
@@ -47,6 +58,16 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
         setup_trigger_getter_ph(TriggerL1, "L1", trig_index, trig_name)
         setup_trigger_getter_ph(TriggerL2, "L2", trig_index, trig_name)
         setup_trigger_getter_ph(TriggerEF, "EF", trig_index, trig_name)
+        
+    log.info("Electron trigger indices:")
+    for trig_index, trig_name in el_trig_indices:
+        log.info("  %2i = %s", trig_index, trig_name)
+        if trig_name[0].isdigit():
+            trig_name = "_" + trig_name
+    
+        setup_trigger_getter_el(TriggerL1, "L1", trig_index, trig_name)
+        setup_trigger_getter_el(TriggerL2, "L2", trig_index, trig_name)
+        setup_trigger_getter_el(TriggerEF, "EF", trig_index, trig_name)
     
     return TriggerL1, TriggerL2, TriggerEF
 
