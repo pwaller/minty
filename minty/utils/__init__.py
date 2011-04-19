@@ -103,9 +103,11 @@ def prevent_close_with_canvases():
 
 def make_chain(files):
     first_file = R.TFile.Open(files[0])
-    is_pau = "PAUReco" in set(k.GetName() for k in first_file.GetListOfKeys())
-    if is_pau:
+    available_keys = set(k.GetName() for k in first_file.GetListOfKeys())
+    if "PAUReco" in available_keys:
         treename = "PAUReco"
+    elif "physics" in available_keys:
+    	treename = "physics"
     else:
         treename = "egamma"
     c = R.TChain(treename)
