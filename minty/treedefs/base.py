@@ -112,7 +112,13 @@ class Particle(Fourvec_PtEtaPhiE):
         raise RuntimeError("Bad Eta: %.4f" % self.etas2)
 
 class Trigger(object):
-    _2g15_loose = g10_loose = g20_loose = g30_loose = g40_loose = 0
+	#"""
+    _2g15_loose = TI.bool(naming("2g15_loose"))
+    _2g20_loose = TI.bool(naming("2g20_loose"))
+    g10_loose = g20_loose = g30_loose = g40_loose = TI.bool
+    _2e15_loose = TI.bool(naming("2e15_loose"))
+    e10_loose = e20_loose = e30_loose = TI.bool
+    #"""
 
 class Vertex(object):
     __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
@@ -209,11 +215,11 @@ class EGamma(Particle):
         
     @property
     def isolated(self):
-        return self.EtCone40_corrected < 3000
+        return self.Etcone40_corrected < 3000
         
     @property
     def nonisolated(self):
-        return self.EtCone40_corrected > 5000
+        return self.Etcone40_corrected > 5000
     
     isConv  = TI.bool
     
@@ -232,13 +238,13 @@ class EGamma(Particle):
     ws3     = TI.float(naming(pau="shwr_w1"))
     wstot   = TI.float(naming(pau="shwr_wtot"))
     
-    EtCone20 = TI.float(naming(pau="shwr_EtCone20"))
-    EtCone30 = TI.float(naming(pau="shwr_EtCone30"))
-    EtCone40 = TI.float(naming(pau="shwr_EtCone40"))
+    Etcone20 = TI.float(naming(pau="shwr_EtCone20"))
+    Etcone30 = TI.float(naming(pau="shwr_EtCone30"))
+    Etcone40 = TI.float(naming(pau="shwr_EtCone40"))
     
-    EtCone20_corrected = TI.float(naming(pau="shwr_EtCone20_corrected"))
-    EtCone30_corrected = TI.float(naming(pau="shwr_EtCone30_corrected"))
-    EtCone40_corrected = TI.float(naming(pau="shwr_EtCone40_corrected"))
+    Etcone20_pt_corrected = TI.float(naming(pau="shwr_EtCone20_corrected"))
+    Etcone30_pt_corrected = TI.float(naming(pau="shwr_EtCone30_corrected"))
+    Etcone40_pt_corrected = TI.float(naming(pau="shwr_EtCone40_corrected"))
     
     class Cluster(Particle):
         """
