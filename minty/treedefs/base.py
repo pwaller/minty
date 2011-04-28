@@ -129,7 +129,7 @@ class Vertex(object):
     __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
     
     nTracks = TI.int(naming(pau="ntracks"))
-    zvertex = TI.int(naming(pau="ID_zvertex"))
+    z = TI.int(naming(pau="ID_zvertex"))
     
 class Jet(Fourvec_PtEtaPhiE):
     __rootname__ = "jet"
