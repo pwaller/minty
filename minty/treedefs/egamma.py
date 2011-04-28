@@ -54,6 +54,9 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
         log.info("  %2i = %s", trig_index, trig_name)
         if trig_name[0].isdigit():
             trig_name = "_" + trig_name
+            
+        # Remove the normal way off accessing the leaf
+    	setattr(Trigger, trig_name, None)
     
         setup_trigger_getter_ph(TriggerL1, "L1", trig_index, trig_name)
         setup_trigger_getter_ph(TriggerL2, "L2", trig_index, trig_name)
@@ -65,6 +68,9 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
         if trig_name[0].isdigit():
             trig_name = "_" + trig_name
     
+        # Remove the normal way off accessing the leaf
+    	setattr(Trigger, trig_name, None)
+    	
         setup_trigger_getter_el(TriggerL1, "L1", trig_index, trig_name)
         setup_trigger_getter_el(TriggerL2, "L2", trig_index, trig_name)
         setup_trigger_getter_el(TriggerEF, "EF", trig_index, trig_name)
