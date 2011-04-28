@@ -33,13 +33,18 @@ class VariableSelection(object):
 class CurrentVS:
     args = VariableSelection()
 
-def naming(**kwargs):
+def naming(*args, **kwargs):
     """
     Rewrite names according to kwargs.
     """
     def functor(rootname=None, leafname=None):
         tuptype = CurrentVS.args.tuple_type
         varname = kwargs.get(tuptype, leafname)
+        if varname == leafname and args:
+      		# If we just used leafname and args are specified, args[0] 
+      		# over-rides.
+        	varname = args[0]
+        	
         if callable(varname):
             res = varname(rootname, leafname)
         elif "{" in varname:
