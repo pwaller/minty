@@ -11,6 +11,7 @@ setup(
             "hmerge = minty.tools.bettermerge:main",
             "minty-rescale = minty.tools.minty_rescale:main",
             "minty-xs = minty.tools.minty_xsection:main",
+            "minty-runperiod-mapping = minty.metadata.period:main",
         ]
     },
     scripts=["scripts/ds_number_to_what"],
