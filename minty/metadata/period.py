@@ -42,5 +42,5 @@ def period_from_run(run):
     for period, (first, last) in RUN_TO_PERIOD.items():
         if first <= run <= last:
             return period, (first, last)
-    return "UNK"
+    return "UNK", (run, run)
     #assert False, "Outside known period: %i" % run
