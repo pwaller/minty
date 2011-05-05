@@ -73,7 +73,7 @@ def by_pt(objects):
 class Global(object):
     RunNumber = TI.int(naming(pau="Run"))
     EventNumber = TI.int(naming(pau="Event"))
-    LumiBlock = TI.int(naming(eg="lbn"))
+    LumiBlock = TI.int(naming(eg="lbn", ph="lbn"))
     
     # Populated by AnalysisBase.setup_objects
     _grl = None
@@ -126,7 +126,7 @@ class Trigger(object):
     #"""
 
 class Vertex(object):
-    __rootname__ = staticmethod(naming(eg="vxp", pau="PV"))
+    __rootname__ = staticmethod(naming(eg="vxp", pau="PV", ph="PV"))
     
     nTracks = TI.int(naming(pau="ntracks"))
     z = TI.int(naming(pau="ID_zvertex"))

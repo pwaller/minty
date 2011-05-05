@@ -108,6 +108,8 @@ def make_chain(files):
         treename = "PAUReco"
     elif "physics" in available_keys:
     	treename = "physics"
+    elif "photon" in available_keys:
+    	treename = "photon"
     else:
         treename = "egamma"
     c = R.TChain(treename)
