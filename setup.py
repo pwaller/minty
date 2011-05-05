@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="minty",
     packages=find_packages(),
+    package_data={'': ["*.yaml"]},
     entry_points={
         "console_scripts" : [
             "py_rep = minty.tools.repeat:main",
