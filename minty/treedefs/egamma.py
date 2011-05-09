@@ -1,10 +1,12 @@
 from itertools import izip
 from logging import getLogger; log = getLogger("minty.treedefs")
 
-from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex, 
-                   Electron, Photon, TruthPhoton, Jet)
 from pytuple.readtuple import make_wrapper
 from pytuple.treeinfo import treeinfo as TI
+
+from .base import (CurrentVS, VariableSelection, Global, Trigger, Vertex, 
+                   Electron, Photon, TruthPhoton, Jet)
+from .conditional import ConditionalMeta
 
 def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
@@ -77,7 +79,7 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
     return TriggerL1, TriggerL2, TriggerEF
 
-def egamma_wrap_tree(t, v16=False):
+def egamma_wrap_tree(t, options):
     
     leafset = set(l.GetName() for l in t.GetListOfLeaves())
     
@@ -93,10 +95,13 @@ def egamma_wrap_tree(t, v16=False):
     tt.add(Global)
     
     tt.add_list(Vertex,      "vertices",      300, **kwargs)
+        
+    Ph = ConditionalMeta.make_class(Photon, options.project, options.release)
+    El = ConditionalMeta.make_class(Electron, options.project, options.release)
     
-    tt.add_list(Photon,      "photons",       400, **kwargs)
+    tt.add_list(El,          "electrons",     400, **kwargs)
+    tt.add_list(Ph,          "photons",       400, **kwargs)
     tt.add_list(Jet,         "jets",          400, **kwargs)
-    tt.add_list(Electron,    "electrons",     400, **kwargs)
     tt.add_list(TruthPhoton, "true_photons",  400, **kwargs)
     
     if selarg.tuple_type == "pau":   
@@ -108,7 +113,5 @@ def egamma_wrap_tree(t, v16=False):
     tt.add(TriggerL1, "L1", **kwargs)
     tt.add(TriggerL2, "L2", **kwargs)
     tt.add(TriggerEF, "EF", **kwargs)
-    
-    Photon.configure_release_dependant_pid(v16)
         
     return tt

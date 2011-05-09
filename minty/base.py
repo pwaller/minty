@@ -28,13 +28,13 @@ class AnalysisBase(object):
         assert not AnalysisSingleton
         AnalysisSingleton = self
         
-        self.release_16 = options.v16
+        self.release_16 = options.release == "rel16"
         self.specific_events = options.events
         
         self.last_tree = 0
         
         self.options = options
-        self.input_tree = egamma_wrap_tree(input_tree, v16=self.release_16)
+        self.input_tree = egamma_wrap_tree(input_tree, options)
         # Save a few attribute lookups since this is on the critical path
         get_tree = self.input_tree.tree.GetTree
         type(self).root_tree = property(lambda s: get_tree())

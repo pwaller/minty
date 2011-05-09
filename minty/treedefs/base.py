@@ -19,6 +19,8 @@ from ..external.robustIsEMDefs import (
     isRobustMedium as isRobustMedium_electron,
     isRobusterTight as isRobusterTight_electron)
 
+from .conditional import HasConditionals, data10, data11, rel15, rel16
+
 AmbiguityResolution_Photon = 23
 
 @property
@@ -141,7 +143,7 @@ class Jet(Fourvec_PtEtaPhiE):
     emFraction = TI.float(naming(pau="emFraction"))
     quality = TI.float(naming(pau="quality"))
     
-class EGamma(Particle):
+class EGamma(Particle, HasConditionals):
     isEM = TI.float
     etas1 = TI.float(naming(pau="etaS1"))
     etas2 = TI.float(naming(pau="etaS2"))
@@ -149,15 +151,17 @@ class EGamma(Particle):
     author = TI.int
     
     oq_function = None # Populated by child classes
+    OQ = TI.int # (data11)
     
     # Populated by AnalysisBase.setup_objects
     _part_type = None
     _event = None 
     _v16_energy_rescaler = None
     
+    @data10
     @property
     @event_cache
-    def good_oq(self):
+    def my_oq(self):
         run = self._event.RunNumber
         if run < 152166:
             # Sigh..
@@ -167,12 +171,10 @@ class EGamma(Particle):
         oq = self.oq_function(run, self.cl.eta, self.cl.phi)
         return oq < 3
     
+    @data11
     @property
-    def graviton2011_fiducial(self):
-        return (self.loose and 
-                self.cl.pt > 25000 and 
-                not self.in_crack and 
-                self.good_oq)
+    def my_oq(self):
+        return not (self.OQ & 34214)
     
     @property
     def et(self):
@@ -309,35 +311,46 @@ class Photon(EGamma):
             self.isConv,        
         )
     
+    @rel15
+    @property
+    def my_loose(self):
+        return self.robust_loose
+        
+    @rel16
+    @property
+    def my_loose(self):
+        return self.loose and self.ambiguity_resolved
+    
+    @rel15
+    @property
+    def my_tight(self):
+        return self.robust_tight
+        
+    @rel16
+    @property
+    def my_tight(self):
+        return self.tight and self.ambiguity_resolved
+    
+    @property
+    def robust_loose(self):
+        return self.robust_idtool.PhotonCutsLoose2()
+    
     @property
     @event_cache
-    def _robust_tight(self):
+    def robust_tight(self):
         return self.robust_idtool.PhotonCutsTight(3)
-        
-    @property
-    def _robust_loose(self):
-        return self.robust_idtool.PhotonCutsLoose2()
         
     @property
     def ambiguity_resolved(self):
         return not (self.isEM & AmbiguityResolution_Photon)
-        
+    
     @property
     def robust_loose_ar(self):
         return self.ambiguity_resolved and self._robust_loose
-        
+    
     @property
     def robust_tight_ar(self):
         return self.ambiguity_resolved and self._robust_tight
-    
-    @classmethod
-    def configure_release_dependant_pid(cls, v16):
-        """
-        Release dependent loose
-        """
-        if v16:
-            cls.loose = cls.robust_loose_ar
-        cls.robust_tight = cls.robust_tight_ar if v16 else cls._robust_tight
     
     @property
     @event_cache

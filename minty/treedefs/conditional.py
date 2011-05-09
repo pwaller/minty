@@ -43,13 +43,13 @@ class ConditionalMeta(type):
             def func
         , because that screws everything up and might be hard to detect.
         """
+            
         extra = dct["_ConditionalMeta__extra"] = cls.temp_store.copy()
         cls.temp_store.clear()
         
         for condition, funcs in sorted(extra.iteritems()):
-            for func in funcs:
+            for func_name, func in sorted(funcs.iteritems()):
                 # Check for @property @Conditional
-                func_name = get_name(func)
                 class_func = dct.get(func_name, None)
                 is_placeholder = get_name(class_func) == "conditionalmeta_placeholder"
                 if (isinstance(class_func, property) and not is_placeholder):
@@ -79,11 +79,19 @@ class ConditionalMeta(type):
             raise RuntimeError("It only makes sense to make_class on a class "
                                "inheriting from HasConditionals.")
         
+        # Go over the bases in order, each over-writing
+        this_extras = {}
+        for base in reversed(target.mro()):
+            if not hasattr(base, "_ConditionalMeta__extra"):
+                continue
+            for condition in conditions:
+                this_extra = base.__extra.get(condition, {})
+                this_extras.setdefault(condition, {}).update(this_extra)
+        
         dct = target.__dict__.copy()
-        for condition in conditions:
-            for function in target.__extra[condition]:
-                func_name = get_name(function)
-                dct[func_name] = function
+        for condition, extras in sorted(this_extras.iteritems()):
+            for name, func in sorted(extras.iteritems()):
+                dct[name] = func
             
         return type.__new__(cls, target.__name__, target.__bases__, dct)
 
@@ -106,7 +114,13 @@ class Conditional(object):
         Wrap a function. Record it in ConditionalMeta.temp_store and return a
         placeholder function which throws an error if it is called.
         """
-        ConditionalMeta.temp_store.setdefault(self.name, []).append(function)
+        cond_dict = ConditionalMeta.temp_store.setdefault(self.name, {})
+        func_name = get_name(function)
+        if func_name in cond_dict:
+            raise RuntimeError("'%s' appears in conditions dict for '%s' more "
+                               "than once." % (func_name, self.name))
+        cond_dict[func_name] = function
+        
         def conditionalmeta_placeholder(*args, **kwargs):
             classname = conditionalmeta_placeholder._ConditionalMeta__class_name
             raise RuntimeError("This function is only callable if instantiated "
@@ -114,10 +128,14 @@ class Conditional(object):
                                "<matching conditions>)" % classname)
         if isinstance(function, property):
             return property(conditionalmeta_placeholder)
+        print "I am here."
         return conditionalmeta_placeholder
 
 data10 = Conditional("data10")
+data11 = Conditional("data11")
 
+rel15 = Conditional("rel15")
+rel16 = Conditional("rel16")
 
 def test():
     """
@@ -133,7 +151,7 @@ def test():
     RuntimeError: This function is only callable if instantiated with ConditionalMeta.make_class(Photon, <matching conditions>)
     """
     
-    class Photon(HasConditionals):
+    class Particle(HasConditionals):
         @Conditional("data10")
         @property
         def value(self):
@@ -147,6 +165,20 @@ def test():
         @property
         def value(self):
             return 2
+
+    class EGamma(Particle):
+        @Conditional("data10")
+        @property
+        def value(self):
+            return 3
+
+    class Photon(EGamma):
+        @Conditional("data11")
+        @property
+        def value(self):
+            return 4
+
+    print Photon.mro()
 
     plain_photon = Photon()
     try:
