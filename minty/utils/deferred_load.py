@@ -18,10 +18,29 @@ def deferred_root_loader(cpp_code, symbol):
     """
     caller_module = get_caller_module()
     caller_module_name = caller_module.__name__
+    def loadmacro():
+        gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
+    
     class DeferredLoader(object):
         def __call__(self, *args, **kwargs):
             
-            gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
+            try:
+                loadmacro()
+            except RuntimeError as e:
+                message = e.args[0]
+                if "Failed to load Dynamic link library" not in message:
+                    print "Failing.."
+                    raise
+                import re
+                match = re.match(r'^\(file "([^"]+)", line.*$', message)
+                (f,) = match.groups()
+                
+                # Delete it and try again.
+                from os import unlink
+                print "Deleting", f, ".."
+                unlink(f)
+                
+                loadmacro()
             
             import ROOT
             DeferredLoader.actual_symbol = getattr(ROOT, symbol)
