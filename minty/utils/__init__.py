@@ -10,7 +10,7 @@ from logging import getLogger
 from .event_cache import event_cache
 from .cut_graph import CutGroup, Cut, Histo, SetContainer
 from .deferred_load import deferred_root_loader, make_deferred_instance
-
+from .delta_r import delta_r
 
 time_logger = getLogger("minty.utils.timer")
 @contextmanager
