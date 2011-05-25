@@ -8,8 +8,6 @@ from yaml import dump, load
 import re
 import sys
 
-PERIODS_DIRECTORY = "/afs/cern.ch/atlas/www/GROUPS/DATAPREPARATION/DataPeriods/"
-
 # run to period mapping
 RUN_TO_PERIOD = load(resource_string(__name__, "periods.yaml"))
 
@@ -21,18 +19,15 @@ def period_from_run(run):
     #assert False, "Outside known period: %i" % run
 
 def generate_mapping():
-    ds = re.compile(r'data(\d{2})_\d+TeV\.period([A-Z][0-9]+)\.runs\.list$')
+    from DQUtils.periods import fetch_project_period_runs
+
     mapping = {}
-    for f in [pjoin(PERIODS_DIRECTORY, f) for f in listdir(PERIODS_DIRECTORY)]:
-        match = ds.search(f)
-        if not match:
-            continue
-        year, period = match.groups()
     
-        with open(f) as fd:
-            runs = map(int, [l for l in fd.readlines() if l])
-            first, last = min(runs), max(runs)
-            mapping["%s_%s" % (year, period)] = (first, last)
+    for project, period_runs in sorted(fetch_project_period_runs().iteritems()):
+        for period, runs in sorted(period_runs.iteritems()):
+            if period == "AllYear" or "VdM" in period:
+                continue
+            mapping["{0}_{1}".format(project, period)] = min(runs), max(runs)
             
     return mapping
 
