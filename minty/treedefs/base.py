@@ -140,8 +140,10 @@ class Jet(Fourvec_PtEtaPhiE):
     #isGood = TI.bool
     #isUgly = TI.bool
     
-    emFraction = TI.float(naming(pau="emFraction"))
-    quality = TI.float(naming(pau="quality"))
+    emFraction = TI.float(naming(eg="AntiKt4TopoEMJets_emfrac", 
+                                 ph="AntiKt4TopoEMJets_emfrac"))
+    quality = TI.float(naming(eg="AntiKt4TopoEMJets_LArQuality",
+                              ph="AntiKt4TopoEMJets_LArQuality"))
     
 class EGamma(Particle, HasConditionals):
     isEM = TI.float
@@ -151,7 +153,7 @@ class EGamma(Particle, HasConditionals):
     author = TI.int
     
     oq_function = None # Populated by child classes
-    OQ = TI.int # (data11)
+    OQ = TI.int(selfcn=data11) # (data11)
     
     # Populated by AnalysisBase.setup_objects
     _part_type = None
@@ -227,9 +229,7 @@ class EGamma(Particle, HasConditionals):
     @property
     def nonisolated(self):
         return self.Etcone40_corrected > 5000
-    
-    isConv  = TI.bool
-    
+        
     Ethad   = TI.float(naming(pau="shwr_EtHad"))
     Ethad1  = TI.float(naming(pau="shwr_EtHad1"))
     E277    = TI.float(naming(pau="shwr_E277"))
@@ -268,16 +268,18 @@ class EGamma(Particle, HasConditionals):
         
         # matched in pau is called "ph_matchMC"
         matched = TI.bool(naming(pau=lambda x, y: x.replace("{leafname}_", "match")))
-        
-        isPhotonFromHardProc = TI.bool
-        
+                
         naming = staticmethod(naming(eg ="{rootname}_truth_{leafname}",
                                      pau="{rootname}_{leafname}_MC"))
-    truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
+    
                     
 class Photon(EGamma):
     __rootname__ = "ph"
     particle = "photon"
+    
+    class Truth(EGamma.Truth):
+        isPhotonFromHardProc = TI.bool
+    truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
     
     @property
     def _part_type(self):
@@ -285,14 +287,16 @@ class Photon(EGamma):
     
     loose = TI.float(naming(pau="isPhotonLoose"))
     tight = TI.float(naming(pau="isPhotonTight"))
-    imatchRecJet = TI.float(naming(pau="imatchRecJet"))
     
+    imatchRecJet = TI.float(naming(ph="jet_AntiKt4TopoEMJets_matched", 
+                                   eg="jet_AntiKt4TopoEMJets_matched"))
     
     L1_e = TI.float(naming(pau="L1_e"))
     
     L1_matchPass = TI.int
     L2_matchPass = TI.int
     EF_matchPass = TI.int
+    isConv  = TI.bool
     
     oq_function = check_photon
     
