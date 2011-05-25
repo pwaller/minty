@@ -140,9 +140,9 @@ class Jet(Fourvec_PtEtaPhiE):
     #isGood = TI.bool
     #isUgly = TI.bool
     
-    emFraction = TI.float(naming(eg="AntiKt4TopoEMJets_emfrac", 
+    emFraction = TI.float(naming(eg="akt4topoem_emfrac", 
                                  ph="AntiKt4TopoEMJets_emfrac"))
-    quality = TI.float(naming(eg="AntiKt4TopoEMJets_LArQuality",
+    quality = TI.float(naming(eg="akt4topoem_LArQuality",
                               ph="AntiKt4TopoEMJets_LArQuality"))
     
 class EGamma(Particle, HasConditionals):
@@ -289,7 +289,7 @@ class Photon(EGamma):
     tight = TI.float(naming(pau="isPhotonTight"))
     
     imatchRecJet = TI.float(naming(ph="jet_AntiKt4TopoEMJets_matched", 
-                                   eg="jet_AntiKt4TopoEMJets_matched"))
+                                   eg="jet_akt4topoem_matched"))
     
     L1_e = TI.float(naming(pau="L1_e"))
     
