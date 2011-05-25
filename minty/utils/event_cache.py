@@ -1,3 +1,5 @@
+from functools import wraps
+
 def func_namespace(func):
     """Generates a unique namespace for a function"""
     kls = None
@@ -21,6 +23,7 @@ class EventCache(object):
         
     def __call__(self, func):
         namespace = (func_namespace(func),)
+        @wraps(func)
         def trampoline(*args):
             key = namespace + tuple(hash(x) for x in args)
             return self.get_value(key, createfunc=lambda: func(*args))

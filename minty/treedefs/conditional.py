@@ -8,6 +8,8 @@ Not implemented:
     * Any kind of protection against matching multiple conditionals
 """
 
+from copy import copy
+from pytuple.treeinfo import treeinfo as TI
 from types import FunctionType
 
 def get_name(what):
@@ -79,7 +81,10 @@ class ConditionalMeta(type):
             raise RuntimeError("It only makes sense to make_class on a class "
                                "inheriting from HasConditionals.")
         
-        # Go over the bases in order, each over-writing
+        conditions = set(conditions)
+        
+        # Go over the bases in order, each over-writing the previous.
+        # Combine _ConditionalMeta__extra dictionaries together.
         this_extras = {}
         for base in reversed(target.mro()):
             if not hasattr(base, "_ConditionalMeta__extra"):
@@ -88,11 +93,32 @@ class ConditionalMeta(type):
                 this_extra = base.__extra.get(condition, {})
                 this_extras.setdefault(condition, {}).update(this_extra)
         
+        # Copy all of the conditional properties and functions onto our target
+        # object
         dct = target.__dict__.copy()
         for condition, extras in sorted(this_extras.iteritems()):
             for name, func in sorted(extras.iteritems()):
                 dct[name] = func
-            
+
+        # Figure out what the final branch members are by combining across the MRO
+        final_dict = {}        
+        for base in reversed(target.mro()):
+            for member, value in sorted(base.__dict__.iteritems()):
+                if isinstance(value, TI._ti_type):  
+                    final_dict[member] = value
+                elif member in final_dict:
+                    # Hm, the member is overwritten by a non-branch. Forget it.
+                    del final_dict[member]
+        
+        # Over-write.
+        for member, value in sorted(final_dict.iteritems()):
+            value = copy(value)
+            selector, value._selfcn = value._selfcn, None
+            if isinstance(selector, Conditional) and selector.name not in conditions:
+                dct[member] = None
+            else:
+                dct[member] = value
+                       
         return type.__new__(cls, target.__name__, target.__bases__, dct)
 
 class HasConditionals(object):
@@ -109,6 +135,9 @@ class Conditional(object):
     def __init__(self, name):
         self.name = name
     
+    def __repr__(self):
+        return "<Conditional {0}>".format(self.name)
+    
     def __call__(self, function):
         """
         Wrap a function. Record it in ConditionalMeta.temp_store and return a
@@ -122,13 +151,15 @@ class Conditional(object):
         cond_dict[func_name] = function
         
         def conditionalmeta_placeholder(*args, **kwargs):
+            
             classname = conditionalmeta_placeholder._ConditionalMeta__class_name
             raise RuntimeError("This function is only callable if instantiated "
                                "with ConditionalMeta.make_class(%s, "
                                "<matching conditions>)" % classname)
+                               
+        conditionalmeta_placeholder.wrapping = func_name
         if isinstance(function, property):
             return property(conditionalmeta_placeholder)
-        print "I am here."
         return conditionalmeta_placeholder
 
 data10 = Conditional("data10")
