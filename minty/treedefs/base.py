@@ -21,7 +21,7 @@ from ..external.robustIsEMDefs import (
 
 from .conditional import HasConditionals, data10, data11, rel15, rel16
 
-AmbiguityResolution_Photon = 23
+AmbiguityResolution_Photon = 1 << 23
 
 @property
 def raise_not_implemented(self):
