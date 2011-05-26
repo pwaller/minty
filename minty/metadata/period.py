@@ -27,6 +27,8 @@ def generate_mapping():
         for period, runs in sorted(period_runs.iteritems()):
             if period == "AllYear" or "VdM" in period:
                 continue
+            if not period[-1].isdigit():
+                continue
             mapping["{0}_{1}".format(project, period)] = min(runs), max(runs)
             
     return mapping
