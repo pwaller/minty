@@ -48,6 +48,8 @@ class AnalysisBase(object):
         
         self.current_tree = self.current_run = self.previous_run = None
         
+        self.should_dump = False
+        self.events_to_dump = []
         self.tasks = []
         self.stopwatch = R.TStopwatch()
         
@@ -112,6 +114,7 @@ class AnalysisBase(object):
     
     def initialize_counters(self):
         self.exception_count = 0
+        self.dumped_events = 0
         self.stopwatch.Start()
             
     def flush(self):
@@ -137,11 +140,16 @@ class AnalysisBase(object):
         
     def finalize(self):
         self.flush()
+        if self.events_to_dump:
+            from minty.utils.skimtree import skimtree
+            skimtree("dumped_events.root", "dumped", 
+                     self.events_to_dump, self.root_tree)
         
     def new_tree(self):
         pass
         
     def event(self, idx, event):
+        self.should_dump = False
         event.index = idx
         event_cache.invalidate()
         self.current_run = event.RunNumber
@@ -173,7 +181,9 @@ class AnalysisBase(object):
             if self.exception_count > self.options.max_exception_count:
                 raise RuntimeError("Encountered more than `max_exception_count`"
                                    " exceptions. Aborting.")
-                                   
+        
+        if self.should_dump:
+            self.events_to_dump.append(idx)
         self.previous_run = self.current_run
         
     def run(self):
