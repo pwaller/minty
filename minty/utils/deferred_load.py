@@ -1,7 +1,10 @@
-from ROOT import gROOT
+
+from commands import getstatusoutput
 from pkg_resources import resource_filename, get_provider
 
 from inspect import stack, getmodule
+
+from ROOT import gROOT, gSystem
 
 def get_caller_module():
     """
@@ -12,6 +15,32 @@ def get_caller_module():
     module = getmodule(frame)
     return module
 
+global python_include_path # Only set me once, so that it only ends up in the path once!
+python_include_path = None
+
+def get_python_include_path():
+    status, output = getstatusoutput("python-config --includes")
+    if status:
+        # Something went wrong, try to resolve it. Walk up the path until we 
+        # find something
+        
+        print "Python interpreter possibly broken? Trying other things in the path."
+        
+        paths = environ["PATH"].split(":")
+        for path in paths:
+            if not isdir(path): 
+                continue
+                
+            if "python-config" in listdir(path):
+                status, output = getstatusoutput("%s/python-config --includes" % path)
+                if not status:
+                    print "Found a working python interpreter:", output
+                    break
+                    
+        assert not status, "Couldn't find working python-config"
+
+    return output
+
 def deferred_root_loader(cpp_code, symbol):
     """
     Load a name from ROOT when it is first called
@@ -19,6 +48,11 @@ def deferred_root_loader(cpp_code, symbol):
     caller_module = get_caller_module()
     caller_module_name = caller_module.__name__
     def loadmacro():
+        global python_include_path
+        if python_include_path is None:
+            python_include_path = get_python_include_path()
+            if python_include_path:
+                gSystem.AddIncludePath(python_include_path)
         gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
     
     class DeferredLoader(object):
