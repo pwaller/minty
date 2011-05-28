@@ -16,7 +16,6 @@ int skimtree(TTree* input, TTree* output, PyObject* eventlist)
     if (!iterator) goto error;
     while ((item = PyIter_Next(iterator))) {
         if (!PyLong_Check(item)) goto error;
-        cout << "Here!" << endl;
         input->GetEntry(PyLong_AsLongLong(item));
         output->Fill();
         Py_DECREF(item);

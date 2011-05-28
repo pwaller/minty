@@ -50,11 +50,12 @@ def deferred_root_loader(cpp_code, symbol):
     caller_module = get_caller_module()
     caller_module_name = caller_module.__name__
     def loadmacro():
-        global python_include_path
-        if python_include_path is None:
-            python_include_path = get_python_include_path()
-            if python_include_path:
-                gSystem.AddIncludePath(python_include_path)
+        # Beware, python-config not available on the grid, arg!
+        #global python_include_path
+        #if python_include_path is None:
+            #python_include_path = get_python_include_path()
+            #if python_include_path:
+                #gSystem.AddIncludePath(python_include_path)
         gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
     
     class DeferredLoader(object):
