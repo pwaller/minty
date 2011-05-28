@@ -1,6 +1,7 @@
 
 from commands import getstatusoutput
-from os import environ
+from os import environ, listdir
+from os.path import isdir
 from pkg_resources import resource_filename, get_provider
 
 from inspect import stack, getmodule
