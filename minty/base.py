@@ -9,6 +9,7 @@ import ROOT as R
 from EnergyRescalerTool import EnergyRescaler
 
 from minty.utils import timer, event_cache
+from minty.utils.skimtree import skimtree
 from minty.utils.grl import GRL, FakeGRL
 from minty.histograms import HistogramManager
 from minty.metadata.period import period_from_run
@@ -141,9 +142,11 @@ class AnalysisBase(object):
     def finalize(self):
         self.flush()
         if self.events_to_dump:
-            from minty.utils.skimtree import skimtree
             skimtree("dumped_events.root", "dumped", 
                      self.events_to_dump, self.root_tree)
+        else:
+            # To satisfy the pilot..
+            skimtree("dumped_events.root", "dumped", [], self.root_tree)
         
     def new_tree(self):
         pass
