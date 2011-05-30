@@ -6,6 +6,6 @@ init_root()
 import ROOT as R
 try:
     R.PyConfig.IgnoreCommandLineOptions = True
-except Exception, x:
+except Exception as x:
     pass
 
