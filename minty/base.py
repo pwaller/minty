@@ -35,6 +35,7 @@ class AnalysisBase(object):
         self.last_tree = 0
         
         self.options = options
+        self.original_tree = input_tree
         self.input_tree = egamma_wrap_tree(input_tree, options)
         # Save a few attribute lookups since this is on the critical path
         get_tree = self.input_tree.tree.GetTree
@@ -142,11 +143,11 @@ class AnalysisBase(object):
     def finalize(self):
         self.flush()
         if self.events_to_dump:
-            skimtree("dumped_events.root", "dumped", 
-                     self.events_to_dump, self.root_tree)
+            skimtree("dumped_events.root",
+                     self.events_to_dump, self.original_tree)
         else:
             # To satisfy the pilot..
-            skimtree("dumped_events.root", "dumped", [], self.root_tree)
+            skimtree("dumped_events.root", [], self.original_tree)
         
     def new_tree(self):
         pass
