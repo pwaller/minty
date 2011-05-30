@@ -6,7 +6,7 @@ from pkg_resources import resource_filename, get_provider
 
 from inspect import stack, getmodule
 
-from ROOT import gROOT, gSystem
+import ROOT as R
 
 def get_caller_module():
     """
@@ -56,7 +56,7 @@ def deferred_root_loader(cpp_code, symbol):
             #python_include_path = get_python_include_path()
             #if python_include_path:
                 #gSystem.AddIncludePath(python_include_path)
-        gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
+        R.gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
     
     class DeferredLoader(object):
         def __call__(self, *args, **kwargs):
