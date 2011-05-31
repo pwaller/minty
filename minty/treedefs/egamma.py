@@ -99,6 +99,10 @@ def egamma_wrap_tree(t, options):
     Ph = ConditionalMeta.make_class(Photon, options.project, options.release)
     El = ConditionalMeta.make_class(Electron, options.project, options.release)
     
+    if t.GetName() == "physics":
+        # SMWZ: Disable jet matching
+        Ph.imatchRecJet = -1
+            
     tt.add_list(El,          "electrons",     400, **kwargs)
     tt.add_list(Ph,          "photons",       400, **kwargs)
     tt.add_list(Jet,         "jets",          400, **kwargs)
