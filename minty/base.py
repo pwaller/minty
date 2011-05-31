@@ -140,8 +140,8 @@ class AnalysisBase(object):
         
         hm.finalize()
         self.initialize_counters()
-        
-    def finalize(self):
+    
+    def dump_events(self):
         start_skim = time()
         if self.events_to_dump:
             skimtree("dumped_events.root",
@@ -151,7 +151,12 @@ class AnalysisBase(object):
             skimtree("dumped_events.root", [], self.original_tree)
         skim_time = time() - start_skim
         self.histogram_manager.write_parameter("skimtime", skim_time)
-        log.info("Took %.3fs to skim %i events." % (skim_time, len(self.events_to_dump)))
+        log.info("Took {0.3f}s to skim {1} events.".format(
+                 skim_time, len(self.events_to_dump)))
+    
+    def finalize(self):
+        if self.options.dump:
+            self.dump_events()
         self.flush()
         
     def new_tree(self):
