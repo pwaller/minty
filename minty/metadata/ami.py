@@ -17,19 +17,27 @@ class Dataset(object):
 def make_dataset(x):
     d = Dataset()
     for key, value in x.iteritems():
+        if not value:
+            # Don't bother with empty attributes
+            continue
         if value.isdigit():
             value = int(value)
         setattr(d, key.lower(), value)
-    d.run = d.runnumber if hasattr("d", "runnumber") else d.datasetnumber
-    d.period = d.period if hasattr("d", "period") else "MC"
     d.status = d.prodsysstatus
+    d.good = d.status == "EVENTS_AVAILABLE" and d.amistatus == "VALID"
+    if not d.good:
+        return None
+    d.run = d.runnumber if hasattr(d, "runnumber") else d.datasetnumber
+    d.period = getattr(d, "period", "UNK")
+    if d.projectname.startswith("mc"):
+        d.period = "MC"
     d.name = d.logicaldatasetname
     d.files = d.nfiles
     d.events = d.totalevents
-    d.good = d.status == "EVENTS_AVAILABLE" and d.amistatus == "VALID"
     return d    
 
 def query_datasets(pattern):
+    pattern = pattern.replace("*", "%").rstrip("/")
     firstpart = pattern.split("_")[0]
     processing_step = "real_data" if "data" in firstpart else "production"
     if "data" in firstpart or "mc11" in firstpart:
@@ -52,7 +60,7 @@ def query_datasets(pattern):
     #ip()
     datasets = [make_dataset(d) for d in result["dataset"].values()]
     
-    return sorted((d for d in datasets if d.good), key=lambda d: d.run)
+    return sorted((d for d in datasets if d and d.good), key=lambda d: d.run)
 
 #from pprint import pprint
 #pprint(result)
