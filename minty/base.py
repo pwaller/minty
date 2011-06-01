@@ -31,6 +31,7 @@ class AnalysisBase(object):
         AnalysisSingleton = self
         
         self.release_16 = options.release == "rel16"
+        self.project = options.project
         self.specific_events = options.events
         
         self.last_tree = 0
