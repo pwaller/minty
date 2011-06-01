@@ -5,6 +5,11 @@ amiCommand BrowseSQLQuery -sql="SELECT dataset.* FROM dataset WHERE dataset.logi
 
 #ListDataset predicate="logicalDatasetName LIKE 'data11_7TeV.00%.physics_Egamma.merge.NTUP_PHOTON.%_p555%'" project=data11_001 processingStep=real_data select=logicalDatasetName,nfiles,totalevents
 
+# Hack to prevent Ft module from overriding showwarnings with something broken
+# (imported by pyAMI)
+from warnings import showwarning
+showwarning.__module__ = "Ft"
+
 from pyAMI.pyAMI import AMI
 import pyAMI
 amiclient = AMI(False)
