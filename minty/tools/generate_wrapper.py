@@ -25,7 +25,7 @@ def by_prefix(leaves, depth=0):
 def by_prefix(leaves):
     result = []
     for leaf in leaves:
-        
+        pass
     
     return result
         
