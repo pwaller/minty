@@ -507,7 +507,8 @@ class Electron(EGamma):
     class Track(Particle):
         E = None # Tracks don't have energy.
     track = TI.instance(Track, naming(pau="{rootname}_{leafname}",
-                                      ph="{rootname}_track{leafname}"))
+                                      ph="{rootname}_track{leafname}",
+                                      eg="{rootname}_track{leafname}"))
     
 class TruthPhoton(Particle):
     __rootname__ = "truth_ph"
