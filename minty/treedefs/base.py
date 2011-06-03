@@ -1,3 +1,17 @@
+"""
+Conventions:
+
+Take this as an example:
+    class Photon(...):
+        __rootname__ = "ph"
+        loose = TI.float(naming(pau="isPhotonLoose"))
+
+This means that all photon objects have a ".loose", and their branch name on the
+tuple is "{__rootname__}_loose". For tuples of type "pau", it's ph_isPhotonLoose.
+
+"""
+
+
 from logging import getLogger; log = getLogger("minty.treedefs")
 
 from math import tanh, cosh, sinh, asinh
@@ -132,7 +146,7 @@ class Trigger(object):
     #"""
 
 class Vertex(object):
-    __rootname__ = staticmethod(naming(eg="vxp", pau="PV", ph="PV"))
+    __rootname__ = staticmethod(naming(eg="vxp", smwz="vxp", pau="PV", ph="PV"))
     
     nTracks = TI.int(naming(pau="ntracks"))
     z = TI.int(naming(pau="ID_zvertex"))
@@ -473,13 +487,27 @@ class Electron(EGamma):
     robust_tight = robuster_tight
     
     @property
+    def hit_dependent_pt(self):
+        if self.nSCTHits + self.nPixHits >= 4:
+            # If we have more than four hits, it's better to use track direction.
+            return self.cl.E / cosh(self.track.eta)
+        return self.cl.pt
+    
+    @property
     def pass_fiducial(self):
         return (self.et > 20000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.47))
                 
     loose = TI.float(naming(pau="isElectronLoose"))
     tight = TI.float(naming(pau="isElectronTight"))
+    
     expectHitInBLayer = TI.int
+    nPixHits = nSCTHits = TI.int
+    
+    class Track(Particle):
+        E = None # Tracks don't have energy.
+    track = TI.instance(Track, naming(pau="{rootname}_{leafname}",
+                                      ph="{rootname}_track{leafname}"))
     
 class TruthPhoton(Particle):
     __rootname__ = "truth_ph"
