@@ -184,8 +184,9 @@ class AnalysisBase(object):
             log.exception("Leaving code at (run, lb, idx) = %r", rlum)
             raise
         except:
-            rlum = event.RunNumber, event.LumiBlock, event.index
-            log.exception("Exception encountered in (run, lb, idx) = %r", rlum)
+            f = basename(self.current_tree.GetDirectory().GetName())
+            rlum = f, event.RunNumber, event.LumiBlock, event.index
+            log.exception("Exception encountered in (file, run, lb, idx) = %r", rlum)
             if self.options.shell_on_exception:
                 raise
             
