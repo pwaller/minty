@@ -13,7 +13,7 @@ RUN_TO_PERIOD = load(resource_string(__name__, "periods.yaml"))
 
 def period_from_run(run):
     if run < 152166:
-        return "MC"
+        return "MC", (run, run)
     for period, (first, last) in RUN_TO_PERIOD.items():
         if first <= run <= last:
             return period, (first, last)

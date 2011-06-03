@@ -204,6 +204,10 @@ class EGamma(Particle, HasConditionals):
         return not self.OQ & 0x8000000
     
     @property
+    def pass_fiducial_eta(self):
+        return abs(self.etas2) < 1.37 or 1.52 < abs(self.etas2) < 2.37
+    
+    @property
     def et(self):
         try:
             return self.cl.E / cosh(self.etas2)
@@ -376,10 +380,6 @@ class Photon(EGamma):
     @event_cache
     def robust_isEM(self):
         return self.robust_idtool.isEM(3)
-        
-    @property
-    def pass_fiducial_eta(self):
-        return abs(self.etas2) < 1.37 or 1.52 < abs(self.etas2) < 2.37
     
     @property
     def jet(self):
@@ -499,6 +499,7 @@ class Electron(EGamma):
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.47))
                 
     loose = TI.float(naming(pau="isElectronLoose"))
+    medium = TI.bool
     tight = TI.float(naming(pau="isElectronTight"))
     
     expectHitInBLayer = TI.int
