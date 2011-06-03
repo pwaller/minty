@@ -30,7 +30,7 @@ def raise_not_implemented(self):
 
 class VariableSelection(object):
     have_truth = False
-    tuple_type = "eg" # possibilities: "pau"
+    tuple_type = "eg" # possibilities: "pau", "ph"
         
 class CurrentVS:
     args = VariableSelection()
@@ -50,7 +50,9 @@ def naming(*args, **kwargs):
         if callable(varname):
             res = varname(rootname, leafname)
         elif "{" in varname:
-            res = varname.replace("{rootname}", rootname) #format(rootname=rootname, leafname="{leafname}")
+            res = varname.replace("{rootname}", rootname) 
+            # Can't use format because of potential KeyErrors.
+            #format(rootname=rootname, leafname="{leafname}")
         elif rootname:
             if "{leafname}" in rootname:
                 res = rootname.replace("{leafname}", leafname)
@@ -75,7 +77,9 @@ def by_pt(objects):
 class Global(object):
     RunNumber = TI.int(naming(pau="Run"))
     EventNumber = TI.int(naming(pau="Event"))
-    LumiBlock = TI.int(naming(eg="lbn", ph="lbn"))
+    LumiBlock = TI.int(naming("lbn", pau="LumiBlock"))
+    
+    larError = TI.int
     
     # Populated by AnalysisBase.setup_objects
     _grl = None
@@ -176,7 +180,14 @@ class EGamma(Particle, HasConditionals):
     @data11
     @property
     def my_oq(self):
-        return not (self.OQ & 34214)
+        # 0x00085a6 == 34214 == 0b1000 0101 1010 0110
+        return not self.OQ & 0x00085a6
+    
+    @data11
+    @property
+    def pass_jetcleaning(self):
+        # 0x8000000 == 134217728 == 0b1000 0000 0000 0000 0000 0000 0000
+        return not self.OQ & 0x8000000
     
     @property
     def et(self):
@@ -271,7 +282,6 @@ class EGamma(Particle, HasConditionals):
                 
         naming = staticmethod(naming(eg ="{rootname}_truth_{leafname}",
                                      pau="{rootname}_{leafname}_MC"))
-    
                     
 class Photon(EGamma):
     __rootname__ = "ph"
@@ -333,7 +343,7 @@ class Photon(EGamma):
     @rel16
     @property
     def my_tight(self):
-        return self.tight and self.ambiguity_resolved
+        return self.tight
     
     @property
     def robust_loose(self):
@@ -349,25 +359,6 @@ class Photon(EGamma):
         return not (self.isEM & AmbiguityResolution_Photon)
     
     @property
-    def robust_loose_ar(self):
-        return self.ambiguity_resolved and self._robust_loose
-    
-    @property
-    def robust_tight_ar(self):
-        return self.ambiguity_resolved and self._robust_tight
-    
-    @property
-    @event_cache
-    def robust_nontight(self):
-        """
-        """
-        return not (self.robust_isEM & 0x45fc01)
-    
-    @property
-    def robust_tight_test(self):
-        return not (self.robust_isEM & 0xFFFFFFFF)
-    
-    @property
     @event_cache
     def robust_isEM(self):
         return self.robust_idtool.isEM(3)
@@ -375,12 +366,7 @@ class Photon(EGamma):
     @property
     def pass_fiducial_eta(self):
         return abs(self.etas2) < 1.37 or 1.52 < abs(self.etas2) < 2.37
-        
-    @property
-    @event_cache
-    def pass_fiducial_pt(self):
-        return self.cl.pt >= 25000
-
+    
     @property
     def jet(self):
         jetidx = self.imatchRecJet

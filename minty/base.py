@@ -152,7 +152,7 @@ class AnalysisBase(object):
             skimtree("dumped_events.root", [], self.original_tree)
         skim_time = time() - start_skim
         self.histogram_manager.write_parameter("skimtime", skim_time)
-        log.info("Took {0.3f}s to skim {1} events.".format(
+        log.info("Took {0:.3f}s to skim {1} events.".format(
                  skim_time, len(self.events_to_dump)))
     
     def finalize(self):
