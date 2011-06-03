@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 from logging import getLogger; log = getLogger("minty.base")
 
-from os.path import exists
+from os.path import basename, exists
 from time import time
 
 import ROOT as R
@@ -143,13 +143,10 @@ class AnalysisBase(object):
         self.initialize_counters()
     
     def dump_events(self):
-        start_skim = time()
         if self.events_to_dump:
-            skimtree("dumped_events.root",
-                     self.events_to_dump, self.original_tree)
-        else:
-            # To satisfy the pilot..
-            skimtree("dumped_events.root", [], self.original_tree)
+            log.info("Skimming {0} events".format(len(self.events_to_dump)))
+        start_skim = time()
+        skimtree(self.options.dump, self.events_to_dump, self.original_tree)
         skim_time = time() - start_skim
         self.histogram_manager.write_parameter("skimtime", skim_time)
         log.info("Took {0:.3f}s to skim {1} events.".format(
