@@ -56,11 +56,17 @@ def naming(*args, **kwargs):
     """
     def functor(rootname=None, leafname=None):
         tuptype = CurrentVS.args.tuple_type
-        varname = kwargs.get(tuptype, leafname)
-        if varname == leafname and args:
-      		# If we just used leafname and args are specified, args[0] 
-      		# over-rides.
-        	varname = args[0]
+        
+        # Three possible overrides: 
+        if tuptype in kwargs:
+            # Name specified for the tuple type
+            varname = kwargs[tuptype]
+        elif args:
+            # Name specified for all other tuple types that aren't in kwargs
+            (varname,) = args
+        else:
+            # Name not specifed, use the one we assigned to
+            varname = leafname
         	
         if callable(varname):
             res = varname(rootname, leafname)
