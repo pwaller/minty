@@ -527,9 +527,9 @@ class Electron(EGamma):
         return (self.et > 20000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.47))
                 
-    loose = TI.float(naming(pau="isElectronLoose"))
-    medium = TI.bool
-    tight = TI.float(naming(pau="isElectronTight"))
+    loose  = TI.bool(naming(pau="isElectronLoose"))
+    medium = TI.bool(naming(pau="isElectronMedium"))
+    tight  = TI.bool(naming(pau="isElectronTight"))
     
     expectHitInBLayer = TI.int
     nPixHits = nSCTHits = TI.int
