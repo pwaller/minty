@@ -143,7 +143,8 @@ class AnalysisBase(object):
         hm.write_parameter("cputime", self.stopwatch.CpuTime())
         
         hm.write_object("file_processed_list", self.files_processed)
-        hm.write_object("file_metadata", self.file_metadata)
+        if self.options.have_metadata:
+            hm.write_object("file_metadata", self.file_metadata)
         
         hm.finalize()
         self.initialize_counters()
@@ -165,8 +166,9 @@ class AnalysisBase(object):
         
     def new_tree(self):
         self.files_processed.append(self.root_tree.GetDirectory().GetName())
-        lumi = self.root_tree.GetDirectory().Get("Lumi/%s" % self.tree_name)
-        self.file_metadata.append(lumi.GetString().Data())
+        if self.options.have_metadata:
+            lumi = self.root_tree.GetDirectory().Get("Lumi/%s" % self.tree_name)
+            self.file_metadata.append(lumi.GetString().Data())
         
     def event(self, idx, event):
         self.should_dump = False

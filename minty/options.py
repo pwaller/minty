@@ -54,6 +54,7 @@ def parse_options(argv):
     p.add_option("--max-exception-count", type=int, default=10)
     p.add_option("--events", action="append", type=int, default=None)
     p.add_option("--dump", action="store", type=str, default=None)
+    p.add_option("--have-metadata", action="store_true")
     
     # Used for conditionals
     p.add_option("--release", default="rel16")
