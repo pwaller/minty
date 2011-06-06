@@ -35,7 +35,8 @@ from ..external.robustIsEMDefs import (
 
 from .conditional import HasConditionals, data10, data11, rel15, rel16
 
-AmbiguityResolution_Photon = 1 << 23
+AmbiguityResolution_Photon_Mask = 1 << 23
+TrackBlayer_Electron_Mask = 1 << 16
 
 @property
 def raise_not_implemented(self):
@@ -374,7 +375,7 @@ class Photon(EGamma):
         
     @property
     def ambiguity_resolved(self):
-        return not (self.isEM & AmbiguityResolution_Photon)
+        return not (self.isEM & AmbiguityResolution_Photon_Mask)
     
     @property
     @event_cache
@@ -492,6 +493,17 @@ class Electron(EGamma):
             # If we have more than four hits, it's better to use track direction.
             return self.cl.E / cosh(self.track.eta)
         return self.cl.pt
+    
+    @property
+    def has_blayer(self):
+        return not self.isEM & TrackBlayer_Electron_Mask
+    
+    @property
+    def pass_blayer_check(self):
+        """
+        "Require All Electrons have BLayer if Expected"
+        """
+        return self.has_blayer if self.expectHitInBLayer else True
     
     @property
     def pass_fiducial(self):
