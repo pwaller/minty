@@ -89,9 +89,11 @@ def egamma_wrap_tree(t, options):
     
     tt = make_wrapper(t, selarg=selarg)
     
-    
     kwargs = dict(create=False, warnmissing=True)
     
+    if selarg.tuple_type == "pau":
+        Global.larError = 0
+            
     tt.add(Global)
     
     tt.add_list(Vertex,      "vertices",      300, **kwargs)
@@ -117,5 +119,9 @@ def egamma_wrap_tree(t, options):
     tt.add(TriggerL1, "L1", **kwargs)
     tt.add(TriggerL2, "L2", **kwargs)
     tt.add(TriggerEF, "EF", **kwargs)
+    
+    if selarg.tuple_type == "pau":
+        # larError not defined for PAU.
+        tt.larError = 0
         
     return tt

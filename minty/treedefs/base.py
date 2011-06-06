@@ -204,6 +204,11 @@ class EGamma(Particle, HasConditionals):
         # 0x00085a6 == 34214 == 0b1000 0101 1010 0110
         return not self.OQ & 0x00085a6
     
+    @data10
+    @property
+    def pass_jetcleaning(self):
+        return self.good_jet_quality
+        
     @data11
     @property
     def pass_jetcleaning(self):
@@ -390,6 +395,7 @@ class Photon(EGamma):
     
     @property
     def jet(self):
+        "Only used for 2010 PAU."
         jetidx = self.imatchRecJet
         if jetidx < 0:
             return None
@@ -397,6 +403,7 @@ class Photon(EGamma):
         
     @property
     def good_jet_quality(self):
+        "Only used for 2010 PAU."
         j = self.jet
         return j is None or j.emFraction < 0.95 or j.quality < 0.8
     
@@ -510,6 +517,10 @@ class Electron(EGamma):
         "Require All Electrons have BLayer if Expected"
         """
         return self.has_blayer if self.expectHitInBLayer else True
+    @property
+    def good_jet_quality(self):
+        "Only used for 2010 PAU. No jet quality for electrons."
+        return True
     
     @property
     def pass_fiducial(self):
