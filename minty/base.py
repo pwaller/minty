@@ -38,6 +38,7 @@ class AnalysisBase(object):
         
         self.options = options
         self.original_tree = input_tree
+        self.tree_name = input_tree.GetName()
         self.input_tree = egamma_wrap_tree(input_tree, options)
         # Save a few attribute lookups since this is on the critical path
         get_tree = self.input_tree.tree.GetTree
@@ -119,6 +120,8 @@ class AnalysisBase(object):
     def initialize_counters(self):
         self.exception_count = 0
         self.dumped_events = 0
+        self.files_processed = []
+        self.file_metadata = []
         self.stopwatch.Start()
             
     def flush(self):
@@ -139,6 +142,9 @@ class AnalysisBase(object):
         hm.write_parameter("walltime", self.stopwatch.RealTime())
         hm.write_parameter("cputime", self.stopwatch.CpuTime())
         
+        hm.write_object("file_processed_list", self.files_processed)
+        hm.write_object("file_metadata", self.file_metadata)
+        
         hm.finalize()
         self.initialize_counters()
     
@@ -158,7 +164,9 @@ class AnalysisBase(object):
         self.flush()
         
     def new_tree(self):
-        pass
+        self.files_processed.append(self.root_tree.GetDirectory().GetName())
+        lumi = self.root_tree.GetDirectory().Get("Lumi/%s" % self.tree_name)
+        self.file_metadata.append(lumi.GetString().Data())
         
     def event(self, idx, event):
         self.should_dump = False
