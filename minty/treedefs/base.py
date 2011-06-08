@@ -526,7 +526,13 @@ class Electron(EGamma):
     def pass_fiducial(self):
         return (self.et > 20000 and 
                 (abs(self.etas2) < 1.37 or 1.52 <= abs(self.etas2) < 2.47))
-                
+    
+    @data11
+    @property
+    def my_oq(self):
+        # 0x85a6 == 1446 == 0b0101 1010 0110
+        return not self.OQ & 0x05a6
+        
     loose  = TI.bool(naming(pau="isElectronLoose"))
     medium = TI.bool(naming(pau="isElectronMedium"))
     tight  = TI.bool(naming(pau="isElectronTight"))
