@@ -7,12 +7,14 @@ amiCommand BrowseSQLQuery -sql="SELECT dataset.* FROM dataset WHERE dataset.logi
 
 # Hack to prevent Ft module from overriding showwarnings with something broken
 # (imported by pyAMI)
-from warnings import showwarning
-showwarning.__module__ = "Ft"
+def get_amiclient():
+    from warnings import showwarning
+    showwarning.__module__ = "Ft"
 
-from pyAMI.pyAMI import AMI
-import pyAMI
-amiclient = AMI(False)
+    from pyAMI.pyAMI import AMI
+    import pyAMI
+    amiclient = AMI(False)
+    return amiclient
 
 class Dataset(object):
     def __repr__(self):
@@ -59,7 +61,7 @@ def query_datasets(pattern):
         "processingStep={0}".format(processing_step),
     ]
 
-    result = amiclient.execute(args).getDict()
+    result = get_amiclient().execute(args).getDict()
     #from IPython.Shell import IPShellEmbed
     #ip = IPShellEmbed(['-pdb'])
     #ip()
