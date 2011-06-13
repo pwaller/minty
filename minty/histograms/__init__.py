@@ -58,12 +58,18 @@ def meaningful_yaxis(orig_hist):
     if not y_title:
         y_title = "N"
     x_units = unit_re.search(x_title)
-    if not x_units: return hist
-    assert x_units, "Couldn't find unit on x-axis: %s" % x_title
-    xunit = x_units.groups()[0]
-    if xunit not in hist.GetYaxis().GetTitle():
+    if x_units:
+        
+        #if not x_units: return hist
+        #assert x_units, "Couldn't find unit on x-axis: %s" % x_title
+        xunit = x_units.groups()[0]
+        if xunit not in hist.GetYaxis().GetTitle():
+            hist.Scale(1, "width")
+            hist.GetYaxis().SetTitle("%s / %s" % (y_title, xunit))
+    else:
+        assert not hist.GetXaxis().IsVariableBinSize(), "Doesn't make sense.."
         hist.Scale(1, "width")
-        hist.GetYaxis().SetTitle("%s / %s" % (y_title, xunit))
+        hist.GetYaxis().SetTitle("%s / %.2f" % (y_title, hist.GetXaxis().GetBinWidth(1)))
     return hist
 
 def histaxes_mev_to_gev(orig_hist):
