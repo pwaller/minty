@@ -18,26 +18,55 @@ def get_amiclient():
     amiclient = AMI(False)
     return amiclient
 
+def try_float(value):
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+def try_conversion(value):
+    if value.isdigit():
+        return int(value)
+    return try_float(value)    
+
 yaml.add_representer(unicode, 
     lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:str', value))
 
-class Dataset(yaml.YAMLObject):
-    yaml_tag = u'!Atlas.Dataset'
-    
+class ContentsWrapper(object):
+    """
+    A class which gives attribute lookup into a dictionary, and can be built 
+    from a dictionary. Values equal to the empty string are ignored.
+    """
     def __init__(self, contents):
-        def c(value):
-            if value.isdigit():
-                return int(value)
-            return value
-    
-        self.contents = dict((k.lower(), c(v)) for k, v in contents.iteritems())
+        self.contents = dict((k.lower(), try_conversion(v)) 
+                             for k, v in contents.iteritems() if v != "")
         
     def __getattr__(self, what):
         if what == "contents":
+            # Contents hasn't been set yet. Return empty set.
             return {}
         if what not in self.contents:
             raise AttributeError(what)
         return self.contents[what]
+    
+
+class MonteCarloInfo(ContentsWrapper, yaml.YAMLObject):
+    yaml_tag = u'!Atlas.MonteCarloInfo'
+
+    @classmethod
+    def from_ds(cls, ds):
+        import PyUtils.AmiLib as A
+        c = A.Client()
+        x = c.exec_cmd("GetDatasetInfo", logicalDatasetName=ds.evgen_name)
+        return cls(x.getDict().values()[0].values()[0])
+
+class Dataset(ContentsWrapper, yaml.YAMLObject):
+    yaml_tag = u'!Atlas.Dataset'
+    
+    @property
+    def evgen_name(self):
+        left, merge, right = self.name.partition(".merge.")
+        return "{0}.evgen.EVNT.{1}".format(left, self.version.split("_")[0])
     
     @property
     def name(self):
@@ -58,6 +87,12 @@ class Dataset(yaml.YAMLObject):
     @property
     def run(self):
         return self.runnumber if "runnumber" in self.contents else self.datasetnumber
+    
+    @property
+    def mc_info(self):
+        if "mc_info" in self.contents:
+            return self.contents["mc_info"]
+        self.contents["mc_info"] = MonteCarloInfo.from_ds(self)
     
     @property
     def period(self):
