@@ -46,11 +46,12 @@ class ColoredFormatter(logging.Formatter):
         return logging.Formatter.format(self, record)
 
 
+
 LoggerClass = logging.getLoggerClass()
 
 class ExtendedLogger(LoggerClass):
-    def __init__(self, name):
-        LoggerClass.__init__(self, name)
+    def __init__(self, *args, **kwargs):
+        LoggerClass.__init__(self, *args, **kwargs)
         self.__dict__.update(logging._levelNames)
 
     def verbose(self, *args):
