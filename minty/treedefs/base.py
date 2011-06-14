@@ -50,6 +50,10 @@ def naming(*args, **kwargs):
     Rewrite names according to kwargs.
     """
     def functor(rootname=None, leafname=None):
+        """
+        rootname: the thing that appears before the variable, e.g. "ph"
+        leafname: the name of the variable
+        """
         tuptype = CurrentVS.args.tuple_type
         
         # Three possible overrides: 
@@ -66,12 +70,12 @@ def naming(*args, **kwargs):
         if callable(varname):
             res = varname(rootname, leafname)
         elif "{" in varname:
-            res = varname.replace("{rootname}", rootname) 
+            res = varname.replace("{rootname}", rootname)
             # Can't use format because of potential KeyErrors.
             #format(rootname=rootname, leafname="{leafname}")
         elif rootname:
             if "{leafname}" in rootname:
-                res = rootname.replace("{leafname}", leafname)
+                res = rootname.replace("{leafname}", varname)
             else:
                 res = "%s_%s" % (rootname, varname) if rootname else varname
         else:
@@ -315,6 +319,13 @@ class Photon(EGamma):
     class Truth(EGamma.Truth):
         isPhotonFromHardProc = TI.bool
     truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
+    
+    class Conv(object):
+        R = TI.float(naming(lambda a, b: "{0}_Rconv".format(Photon.__rootname__)))
+        
+        __naming__ = staticmethod(naming(ph="{rootname}_{leafname}"))
+        
+    conv = TI.instance(Conv, Conv.__naming__)
     
     @property
     def _part_type(self):
