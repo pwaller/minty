@@ -146,6 +146,12 @@ class AnalysisBase(object):
         if self.options.have_metadata:
             hm.write_object("file_metadata", self.file_metadata)
         
+        leaves = set(leaf
+                     for tree in self.input_tree._enabled_branches.values() 
+                     for leaf, descriptor in tree)
+        
+        hm.write_object("enabled_branches", leaves)
+        
         hm.finalize()
         self.initialize_counters()
     
