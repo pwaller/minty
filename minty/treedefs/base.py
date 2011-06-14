@@ -28,11 +28,6 @@ import ROOT as R
 
 from ..utils import event_cache
 
-from ..external.robustIsEMDefs import (
-    isRobustLoose as isRobustLoose_electron,
-    isRobustMedium as isRobustMedium_electron,
-    isRobusterTight as isRobusterTight_electron)
-
 from .conditional import HasConditionals, data10, data11, rel15, rel16
 
 AmbiguityResolution_Photon_Mask = 1 << 23
@@ -486,19 +481,6 @@ class Electron(EGamma):
     _part_type = "ELECTRON"
     
     oq_function = check_electron
-
-    @property
-    def robust_loose(self):
-        args = self.isEM, abs(self.etas2), self.et, self.reta, self.weta2
-        return isRobusterLoose_electron(*args)
-        
-    @property
-    def robuster_tight(self):
-        args = self.isEM, self.expectHitInBLayer, abs(self.etas2), self.et, self.reta, self.weta2
-        return isRobusterTight_electron(*args)
-    
-    robust_nontight = 0 # Doesn't make sense for electrons (?)
-    robust_tight = robuster_tight
     
     @property
     def hit_dependent_pt(self):
