@@ -347,6 +347,10 @@ class Photon(EGamma):
     oq_function = check_photon
     
     @property
+    def pt_via_clE_etas2(self):
+        return self.cl.E / cosh(self.etas2)
+    
+    @property
     @event_cache
     def robust_idtool(self):
         return PhotonIDTool(
