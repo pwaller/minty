@@ -12,6 +12,7 @@ setup(
             "minty-rescale = minty.tools.minty_rescale:main",
             "minty-xs = minty.tools.minty_xsection:main",
             "minty-runperiod-mapping = minty.metadata.period:main",
+            "minty-slim = minty.tools.tree.slimmer:main",
         ]
     },
 )
