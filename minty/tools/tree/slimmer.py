@@ -51,7 +51,7 @@ def main():
     A = parser.add_argument
     A('-t', '--tree-name',   help='Name of the tree')
     A('-v', '--vars-file',   help='Filename containing list of variables to keep, one per line')
-    A('-o', '--output-file', help="Output root filename")
+    A('-o', '--output-file', help="Output root filename", default="output.root")
     A('input', nargs="+")
     
     args = parser.parse_args()
