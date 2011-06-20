@@ -14,7 +14,6 @@ def slim_tree(in_tree, destination, variables):
         
     n_events = -1
     clone_option = "SortBasketsByBranch"
-        
 
     start = time()
     f = R.TFile(destination, "recreate")
@@ -24,7 +23,7 @@ def slim_tree(in_tree, destination, variables):
     f.Write()
     f.Close()
 
-    print "Took %.3f seconds to clone tree" % (ct_end - start)
+    print "Took %.3f seconds to clone tree (%i events)" % (ct_end - start, out_tree.GetEntries())
     
     
 def make_chain(tree_name, files):
