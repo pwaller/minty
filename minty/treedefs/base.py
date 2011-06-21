@@ -178,6 +178,8 @@ class EGamma(Particle, HasConditionals):
     
     oq_function = None # Populated by child classes
     OQ = TI.int(selfcn=data11) # (data11)
+    goodOQ = TI.int(selfcn=data11)
+    OQRecalc = TI.int(selfcn=data11)
     
     # Populated by AnalysisBase.setup_objects
     _part_type = None
@@ -269,7 +271,10 @@ class EGamma(Particle, HasConditionals):
     @property
     def nonisolated(self):
         return self.Etcone40_corrected > 5000
-        
+    
+    deltaEs = TI.float
+    deltaEmax2 = TI.float
+    depth   = TI.float
     Ethad   = TI.float(naming(pau="shwr_EtHad"))
     Ethad1  = TI.float(naming(pau="shwr_EtHad1"))
     E277    = TI.float(naming(pau="shwr_E277"))
@@ -280,6 +285,9 @@ class EGamma(Particle, HasConditionals):
     emaxs1  = TI.float(naming(pau="shwr_Emax1"))
     Emax2   = TI.float(naming(pau="shwr_Emax2"))
     f1      = TI.float(naming(pau="shwr_f1"))
+    f1core  = TI.float
+    f3      = TI.float(naming(pau="shwr_f3"))
+    f3core  = TI.float
     fside   = TI.float(naming(pau="shwr_fracm"))
     weta2   = TI.float(naming(pau="shwr_weta2"))
     ws3     = TI.float(naming(pau="shwr_w1"))
@@ -299,6 +307,7 @@ class EGamma(Particle, HasConditionals):
         pau:    ph_*_clus
         """
     cl = TI.instance(Cluster, naming(pau="{rootname}_{leafname}_clus"))
+    time = TI.float
         
     class Truth(Particle):
         """
