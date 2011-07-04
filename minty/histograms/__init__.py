@@ -43,11 +43,12 @@ def scale_bins(bins, factor):
     return ("var",) + tuple(map(scale, bins))
 
 def fixup_hist_units(orig_hist):
+    hist = orig_hist
     if "[MeV]" in orig_hist.GetXaxis().GetTitle():
         hist = histaxes_mev_to_gev(orig_hist)
-        hist = meaningful_yaxis(hist)
-    else:
-        hist = orig_hist
+    hist = meaningful_yaxis(hist)
+    #else:
+        #
     return hist
 
 unit_re = re.compile(r"(\[[^\]]+\])")
@@ -66,10 +67,14 @@ def meaningful_yaxis(orig_hist):
         if xunit not in hist.GetYaxis().GetTitle():
             hist.Scale(1, "width")
             hist.GetYaxis().SetTitle("%s / %s" % (y_title, xunit))
+    elif hist.GetXaxis().IsVariableBinSize():
+        hist.Scale(1, "width")
+        hist.GetYaxis().SetTitle("%s / (unit %s)" % (y_title, hist.GetXaxis().GetTitle()))
+        
     else:
         assert not hist.GetXaxis().IsVariableBinSize(), "Doesn't make sense.."
         hist.Scale(1, "width")
-        hist.GetYaxis().SetTitle("%s / %.2f" % (y_title, hist.GetXaxis().GetBinWidth(1)))
+        hist.GetYaxis().SetTitle("%s / %.3f" % (y_title, hist.GetXaxis().GetBinWidth(1)))
     return hist
 
 def histaxes_mev_to_gev(orig_hist):

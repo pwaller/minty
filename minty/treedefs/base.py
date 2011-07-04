@@ -536,7 +536,7 @@ class Electron(EGamma):
     @data11
     @property
     def my_oq(self):
-        # 0x85a6 == 1446 == 0b0101 1010 0110
+        # 0x5a6 == 1446 == 0b0101 1010 0110
         return not self.OQ & 0x05a6
         
     loose  = TI.bool(naming(pau="isElectronLoose"))
