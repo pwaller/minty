@@ -40,7 +40,13 @@ class ContentsWrapper(object):
     def __init__(self, contents):
         self.contents = dict((k.lower(), try_conversion(v)) 
                              for k, v in contents.iteritems() if v != "")
-        
+    
+    def clean(self):
+        self.contents = dict((key, value) 
+                             for key, value in self.contents.iteritems()
+                             if value)
+        return self
+    
     def __getattr__(self, what):
         if what == "contents":
             # Contents hasn't been set yet. Return empty set.
