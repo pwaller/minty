@@ -208,6 +208,7 @@ class AnalysisBase(object):
             
             self.exception_count += 1
             if self.exception_count > self.options.max_exception_count:
+                self.finalize()
                 raise RuntimeError("Encountered more than `max_exception_count`"
                                    " exceptions. Aborting.")
         
