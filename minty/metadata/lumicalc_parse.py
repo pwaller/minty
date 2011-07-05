@@ -31,8 +31,8 @@ class LumiRun(YAMLObject):
         return self
 
     @property
-    def total_lumi(self):
-        return sum(iov.lumi for iov in self.iovs)
+    def total(self):
+        return sum(lumi for since, until, lumi in self.iovs)
 
 class LumiInfo(YAMLObject):
     yaml_tag = u'!LumiCalc.LumiInfo'
@@ -52,7 +52,7 @@ class LumiInfo(YAMLObject):
     
     @property
     def total_per_run(self):
-        return dict((key, value.total_lumi) for key, value in self.by_run)
+        return dict((key, value.total) for key, value in self.by_run.iteritems())
     
     @classmethod
     def from_lumicalc(cls, filename):
@@ -66,7 +66,7 @@ class LumiInfo(YAMLObject):
     @classmethod
     def from_file(cls, filename):
         with open(filename) as fd:
-            return safe_load(filename)
+            return load(fd)
         
     def to_file(self, filename):
         with open(filename, "w") as fd:
