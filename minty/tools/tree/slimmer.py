@@ -6,24 +6,23 @@ import ROOT as R
 
 from minty.options import load_files
 
-def slim_tree(in_tree, destination, variables):
+def slim_tree(in_tree, destination, variables, clone_option):
 
     in_tree.SetBranchStatus("*", False)
     for branch in variables:
         in_tree.SetBranchStatus(branch, True)
         
     n_events = -1
-    clone_option = "SortBasketsByBranch"
 
     start = time()
-    f = R.TFile(destination, "recreate")
+    f = R.TFile(destination, "recreate", "", 9)
     f.cd()
     out_tree = in_tree.CloneTree(n_events, clone_option)
     ct_end = time()
     f.Write()
     f.Close()
 
-    print "Took %.3f seconds to clone tree (%i events)" % (ct_end - start, out_tree.GetEntries())
+    print "Took %.3f seconds to clone tree (%i events)" % (ct_end - start, in_tree.GetEntries())
     
     
 def make_chain(tree_name, files):
@@ -50,6 +49,7 @@ def main():
     A = parser.add_argument
     A('-t', '--tree-name',   help='Name of the tree')
     A('-v', '--vars-file',   help='Filename containing list of variables to keep, one per line')
+    A('-c', '--clone-option', help='See TTree::CloneTree documentation', default="SortBasketsByEntry")
     A('-o', '--output-file', help="Output root filename", default="output.root")
     A('input', nargs="+")
     
@@ -58,5 +58,5 @@ def main():
     input_tree = make_chain(args.tree_name, load_files(args.input))
     variables = load_leaflist(args.vars_file)
     
-    slim_tree(input_tree, args.output_file, variables)
+    slim_tree(input_tree, args.output_file, variables, args.clone_option)
 
