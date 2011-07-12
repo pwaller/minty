@@ -12,6 +12,9 @@ lumicalc_regex = re.compile(
     .*?IntL recorded \((?P<unit>[munpf])b\^\-1\) : (?P<lumi>[0-9e\.\+]+)
     """).strip(), re.MULTILINE | re.DOTALL)
     
+yaml.add_representer(tuple, 
+    lambda dumper, value: dumper.represent_sequence(u'tag:yaml.org,2002:seq', value))
+
 class LumiRun(YAMLObject):
     yaml_tag = u'!LumiCalc.Run'
     X_TO_MICRO = {"m" : 1e-3, "u" : 1e0, "n" : 1e3, "p" : 1e6, "f" : 1e9}
