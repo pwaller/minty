@@ -505,6 +505,11 @@ class Electron(EGamma):
     
     oq_function = check_electron
     
+    
+    class Truth(EGamma.Truth):
+        pass
+    truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
+    
     @property
     def hit_dependent_pt(self):
         if self.nSCTHits + self.nPixHits >= 4:
