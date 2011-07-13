@@ -102,6 +102,7 @@ def prevent_close_with_canvases():
     register(wait_for_zero_canvases)
 
 def make_chain(files):
+    if not files: return None
     first_file = R.TFile.Open(files[0])
     available_keys = set(k.GetName() for k in first_file.GetListOfKeys())
     if "PAUReco" in available_keys:
