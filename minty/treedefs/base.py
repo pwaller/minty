@@ -146,9 +146,9 @@ class Trigger(object):
 	#"""
     _2g15_loose = TI.bool(naming("2g15_loose"))
     _2g20_loose = TI.bool(naming("2g20_loose"))
-    g10_loose = g20_loose = g30_loose = g40_loose = TI.bool
+    g20_loose = g40_loose = TI.bool
     _2e15_loose = TI.bool(naming("2e15_loose"))
-    e10_loose = e20_loose = e30_loose = TI.bool
+    e10_loose = e20_loose = TI.bool
     #"""
 
 class Vertex(object):
