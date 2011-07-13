@@ -8,6 +8,7 @@ from logging import getLogger; log = getLogger("minty.options")
 
 
 def load_files(files):
+    if files == [""]: return []
     actual_files = []
     using_comma_workaround = using_newline_workaround = False
     for filename in files:
