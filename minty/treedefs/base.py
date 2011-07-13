@@ -158,16 +158,18 @@ class Vertex(object):
     z = TI.int(naming(pau="ID_zvertex"))
     
 class Jet(Fourvec_PtEtaPhiE):
-    __rootname__ = "jet"
-    
+    #__rootname__ = "jet"
+    __rootname__ = staticmethod(naming(eg="jet_akt4topoem", 
+                                       smwz="jet", 
+                                       ph="jet_AntiKt4TopoEMJets"))
     #isBad = TI.bool
     #isGood = TI.bool
     #isUgly = TI.bool
     
-    emFraction = TI.float(naming(eg="akt4topoem_emfrac", 
-                                 ph="AntiKt4TopoEMJets_emfrac"))
-    quality = TI.float(naming(eg="akt4topoem_LArQuality",
-                              ph="AntiKt4TopoEMJets_LArQuality"))
+    emFraction = TI.float(naming(eg="emfrac", 
+                                 ph="emfrac"))
+    quality = TI.float(naming(eg="LArQuality",
+                              ph="LArQuality"))
     
 class EGamma(Particle, HasConditionals):
     isEM = TI.float
@@ -346,11 +348,8 @@ class Photon(EGamma):
     imatchRecJet = TI.float(naming(ph="jet_AntiKt4TopoEMJets_matched", 
                                    eg="jet_akt4topoem_matched"))
     
-    L1_e = TI.float(naming(pau="L1_e"))
+    #L1_e = TI.float(naming(pau="L1_e"))
     
-    L1_matchPass = TI.int
-    L2_matchPass = TI.int
-    EF_matchPass = TI.int
     isConv  = TI.bool
     
     oq_function = check_photon
