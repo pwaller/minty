@@ -75,6 +75,39 @@ class Dataset(ContentsWrapper, yaml.YAMLObject):
         return "{0}.evgen.EVNT.{1}".format(left, self.version.split("_")[0])
     
     @property
+    def effective_luminosity(self):
+        from uncertainties import ufloat
+        
+        if self.projectname.startswith("data"):
+            raise NotImplementedError
+        
+        mi = self.mc_info
+        assert mi.crosssection_unit == "nano barn"
+        
+        xcentral, xlo, xhi = mi.crosssection_mean, mi.crosssection_min, mi.crosssection_max
+        ecentral, elo, ehi = mi.genfilteff_mean, mi.genfilteff_min, mi.genfilteff_max
+        
+        xcenterr = (xlo + xhi) / 2
+        xcenterr_frac = 100*abs(1 - (xcentral / xcenterr))
+        assert True or xcenterr_frac < 0.01, (
+            "Mean value disagrees with that from the error by more than 0.01%!"
+            " ({0})".format(xcenterr_frac))
+        
+        ecenterr = (elo + ehi) / 2
+        ecenterr_frac = 100*abs(1 - (ecentral / ecenterr))
+        assert True or ecenterr_frac < 7.5, (
+            "Mean value disagrees with that from the error by more than 7.5%!"
+            " ({0})".format(ecenterr_frac))
+        
+        xsec = ufloat((xcentral, (xhi - xlo) / 2))
+        filter_efficiency = ufloat((ecentral, (ehi - elo) / 2))
+        eff_lumi = self.totalevents / filter_efficiency / xsec
+        return eff_lumi
+    
+    def reweight_factor(self, target_lumi):
+        return target_lumi / self.effective_luminosity
+    
+    @property
     def name(self):
         return self.logicaldatasetname
     
