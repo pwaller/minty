@@ -153,9 +153,10 @@ class Conditional(object):
         def conditionalmeta_placeholder(*args, **kwargs):
             
             classname = conditionalmeta_placeholder._ConditionalMeta__class_name
-            raise RuntimeError("This function is only callable if instantiated "
-                               "with ConditionalMeta.make_class(%s, "
-                               "<matching conditions>)" % classname)
+            raise RuntimeError("This function ({0}) is only callable if instantiated "
+                               "with ConditionalMeta.make_class({1}, "
+                               "<matching conditions>)"
+                               .format(func_name, classname))
                                
         conditionalmeta_placeholder.wrapping = func_name
         if isinstance(function, property):
