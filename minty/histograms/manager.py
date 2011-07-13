@@ -1,4 +1,3 @@
-from array import array
 from cPickle import dumps
 
 from logging import getLogger; log = getLogger("minty.histograms.manager")

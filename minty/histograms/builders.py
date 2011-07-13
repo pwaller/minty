@@ -1,3 +1,5 @@
+from array import array
+
 import ROOT as R
 
 def build_histogram_auto(name, title, binning):
