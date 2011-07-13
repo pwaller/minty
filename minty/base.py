@@ -45,7 +45,7 @@ class AnalysisBase(object):
         type(self).root_tree = property(lambda s: get_tree())
         self.info = self.input_tree._selarg
         
-        self.mc = self.info.have_truth
+        self.mc = options.mc
         
         self.setup_grl(options)
         self.setup_objects()
@@ -200,6 +200,7 @@ class AnalysisBase(object):
         except (KeyboardInterrupt, SystemExit):
             rlum = event.RunNumber, event.LumiBlock, event.index
             log.exception("Leaving code at (run, lb, idx) = %r", rlum)
+            self.finalize()
             raise
         except:
             f = basename(self.current_tree.GetDirectory().GetName())
@@ -230,8 +231,9 @@ class AnalysisBase(object):
             log.info("Looped over %i events at %.2f events/sec" % args)
             return
         
-        events = min(self.input_tree.tree.GetEntries(), self.options.limit)
-        log.info("Will process %i events." % events)
+        nentries = self.input_tree.tree.GetEntries()
+        events = min(nentries, self.options.limit)
+        log.info("Will process {0} events of {1}.".format(events, nentries))
         with timer("perform analysis loop") as t:
             events = self.input_tree.loop(
                 self.event, lo=self.options.skip, 
