@@ -45,6 +45,8 @@ class AnalysisBase(object):
         type(self).root_tree = property(lambda s: get_tree())
         self.info = self.input_tree._selarg
         
+        self.mc = self.info.have_truth
+        
         self.setup_grl(options)
         self.setup_objects()
         
