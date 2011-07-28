@@ -21,7 +21,10 @@ def rescale_dir(d_in, d_out, scale):
             d_out.cd()
             #print "  Scaling %s" % name
             obj.Scale(scale)
-            obj.Write()        
+            obj.Write()
+        else:
+            d_out.cd()
+            d_out.WriteObject(obj, name)
 
 def main():
     from sys import argv
