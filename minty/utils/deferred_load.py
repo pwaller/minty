@@ -1,3 +1,4 @@
+from logging import getLogger; log = getLogger("minty.utils.deferred_load")
 
 from commands import getstatusoutput
 from os import environ, listdir
@@ -6,6 +7,7 @@ from pkg_resources import resource_filename, get_provider
 
 from inspect import stack, getmodule
 
+import ROOT
 import ROOT as R
 
 def get_caller_module():
@@ -45,50 +47,67 @@ def get_python_include_path():
 
 def deferred_root_loader(cpp_code, symbol):
     """
-    Load a name from ROOT when it is first called
+    Load a name from ROOT when it is first called or used
     """
     caller_module = get_caller_module()
     caller_module_name = caller_module.__name__
-    def loadmacro():
+    def loadmacro(tries=0):
         # Beware, python-config not available on the grid, arg!
         #global python_include_path
         #if python_include_path is None:
             #python_include_path = get_python_include_path()
             #if python_include_path:
                 #gSystem.AddIncludePath(python_include_path)
-        R.gROOT.LoadMacro(resource_filename(caller_module_name, cpp_code))
+                
+        #if "-DSTANDALONE" not in R.gSystem.GetFlagsOpt():
+            #R.gSystem.SetFlagsOpt(R.gSystem.GetFlagsOpt() + " -DSTANDALONE=1 ")
+            #print R.gSystem.GetFlagsOpt()
+            
+        filename = resource_filename(caller_module_name, cpp_code.rstrip("+"))
+        try:
+            R.gROOT.LoadMacro("{0}+O".format(filename))
+        except RuntimeError as e:
+            message = e.args[0]
+            if "Failed to load Dynamic link library" not in message or tries > 2:
+                print "Failing.."
+                raise
+            import re
+            match = re.match(r'^\(file "([^"]+)", line.*$', message)
+            (f,) = match.groups()
+            
+            # Delete it and try again.
+            from os import unlink
+            print "Deleting", f, ".."
+            unlink(f)
+            loadmacro(tries+1)
+            
+        return getattr(ROOT, symbol)
     
     class DeferredLoader(object):
-        def __call__(self, *args, **kwargs):
-            
-            try:
-                loadmacro()
-            except RuntimeError as e:
-                message = e.args[0]
-                if "Failed to load Dynamic link library" not in message:
-                    print "Failing.."
-                    raise
-                import re
-                match = re.match(r'^\(file "([^"]+)", line.*$', message)
-                (f,) = match.groups()
+        actual_symbol = None
+    
+        def load(self):
+            if DeferredLoader.actual_symbol:
+                return
                 
-                # Delete it and try again.
-                from os import unlink
-                print "Deleting", f, ".."
-                unlink(f)
+            log.info("Attempting to load %s, %s", cpp_code, symbol)
                 
-                loadmacro()
+            DeferredLoader.actual_symbol = loadmacro()
             
-            import ROOT
-            DeferredLoader.actual_symbol = getattr(ROOT, symbol)
-            
-            class DeferredLoader_loaded(object):
+            class DeferredLoader_loaded(DeferredLoader):
                 __call__ = staticmethod(DeferredLoader.actual_symbol)
                 
             DeferredLoader_loaded.__name__ = DeferredLoader.__name__
             self.__class__ = DeferredLoader_loaded
+    
+        def __getattr__(self, name):
+            self.load()
+            return getattr(DeferredLoader.actual_symbol, name)
+        
+        def __call__(self, *args, **kwargs):
+            self.load()
             
-            # Not a recursive call because we just replaced ourselves!
+            # Not a recursive call because we just replaced our class in load()!
             return self.__call__(*args, **kwargs)
     
     return DeferredLoader()
