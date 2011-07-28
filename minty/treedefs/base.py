@@ -467,7 +467,20 @@ class Photon(EGamma):
         j = self.jet
         return j is None or j.emFraction < 0.95 or j.quality < 0.8
     
-    def v16_E_corrected(self, n=0):
+    @rel15
+    @property
+    def E_corrected(self):
+        abs_eta = abs(self.etas2)
+        if 0 <= abs_eta < 1.4:
+            return self.E / (1. - 0.0096)
+        else: #if 1.4 <= abs_eta < 2.5:
+            return self.E / (1. + 0.0189)
+        #else:
+            #raise NotImplementedError
+            
+    @rel16
+    @property
+    def E_corrected(self, n=0):
         # For electrons:
         #et = cl_e/cosh(trk_eta) if (nSCT + nPix) >= 4) otherwise  et = cl_et 
         
@@ -476,44 +489,31 @@ class Photon(EGamma):
         etas2 = self.etas2
         cl_et = cl.E / cosh(etas2)
         return v16_E_correction(etas2, phi, E, cl_et, n, self._part_type)
-        
-    def v16_corrections(self):
-        E_corrected = self.v16_E_corrected()
-        v = Fourvec_PtEtaPhiE(self.cl.pt, self.etas1, self.phi, E_corrected)
-        v.isConv = self.isConv
-        return v
-    
-    @property
-    def v15_E_corrected(self):
-        abs_eta = abs(self.etas2)
-        if 0 <= abs_eta < 1.4:
-            return self.E / (1. - 0.0096)
-        else: #if 1.4 <= abs_eta < 2.5:
-            return self.E / (1. + 0.0189)
-        #else:
-            #raise NotImplementedError
 
-    def v15_corrections(self, vertex_z):
-    
-        if abs(self.etas1) < 1.5:
-            R = self.v15_RZ_1stSampling_cscopt2
-            Z = R * sinh(self.etas1)
-            
-        else:
-            Z = self.v15_RZ_1stSampling_cscopt2
-            R = Z / sinh(self.etas1)
+    def corrected_fourvec(self, vertex_z):
         
-        eta_corrected = asinh((Z - vertex_z) / R)
+        eta_corrected = self.eta_corrected(vertex_z)
         
-        E_corrected = self.v15_E_corrected
+        E_corrected = self.E_corrected
         pt_corrected = E_corrected / cosh(eta_corrected)
         
         v = Fourvec_PtEtaPhiE(pt_corrected, eta_corrected, self.phi, E_corrected)
         v.isConv = self.isConv
         return v
+    
+    def eta_corrected(self, vertex_z):
+        if abs(self.etas1) < 1.5:
+            R = self.RZ_1stSampling_cscopt2
+            Z = R * sinh(self.etas1)
+            
+        else:
+            Z = self.RZ_1stSampling_cscopt2
+            R = Z / sinh(self.etas1)
+                
+        return asinh((Z - vertex_z) / R)
         
     @property
-    def v15_RZ_1stSampling_cscopt2(self):
+    def RZ_1stSampling_cscopt2(self):
         # adapted from CaloDepthTool.cxx, double CaloDepthTool::cscopt2_parametrized(const CaloCell_ID::CaloSample sample,
         #  const double eta, const double /*phi*/ )
         # No warranty !!!
