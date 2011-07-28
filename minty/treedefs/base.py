@@ -23,6 +23,7 @@ from pytuple.Fourvec import Fourvec_All, Fourvec_PtEtaPhiE
 from PhotonIDTool import PhotonIDTool
 from OQMaps import check_photon, check_electron
 from EnergyRescalerTool import v16_E_correction
+from egammaAnalysisUtils import CaloIsoCorrection, GetPtEDCorrectedIsolation, GetPtNPVCorrectedIsolation
 
 import ROOT as R
 
@@ -32,6 +33,15 @@ from .conditional import HasConditionals, data10, data11, rel15, rel16
 
 AmbiguityResolution_Photon_Mask = 1 << 23
 TrackBlayer_Electron_Mask = 1 << 16
+
+# https://twiki.cern.ch/twiki/bin/view/AtlasProtected/LArCleaningAndObjectQuality#Details_object_quality_flag_and
+# Grepability
+# 0x8000000 == 134217728 == 0b1000 0000 0000 0000 0000 0000 0000
+LARBITS_OUTOFTIME_CLUSTER = 1 << 26
+LARBITS_PHOTON_CLEANING = 1 << 27
+
+# 0x00085a6 == 34214 == 0b1000 0101 1010 0110
+OQ_BAD_BITS = 0x00085a6
 
 @property
 def raise_not_implemented(self):
@@ -175,6 +185,7 @@ class EGamma(Particle, HasConditionals):
     isEM = TI.float
     etas1 = TI.float(naming(pau="etaS1"))
     etas2 = TI.float(naming(pau="etaS2"))
+    etap  = TI.float
     
     author = TI.int
     
@@ -204,8 +215,7 @@ class EGamma(Particle, HasConditionals):
     @data11
     @property
     def my_oq(self):
-        # 0x00085a6 == 34214 == 0b1000 0101 1010 0110
-        return not self.OQ & 0x00085a6
+        return not self.OQ & OQ_BAD_BITS
     
     @data10
     @property
@@ -215,8 +225,23 @@ class EGamma(Particle, HasConditionals):
     @data11
     @property
     def pass_jetcleaning(self):
-        # 0x8000000 == 134217728 == 0b1000 0000 0000 0000 0000 0000 0000
-        return not self.OQ & 0x8000000
+        return not self.OQ & LARBITS_PHOTON_CLEANING
+    
+    @property
+    def pass_timing(self):
+        return not self.OQ & LARBITS_OUTOFTIME_CLUSTER
+    
+    @property
+    def pass_photoncleaning(self):
+        return not (not self.pass_jetcleaning and 
+                    (self.reta > 0.98 or self.rphi > 1 or self.pass_timing))
+        #  !( (ph_OQ&134217728)!=0 && (ph_reta>0.98||ph_rphi>1.0||(ph_OQ&67108864)!=0) )
+        
+        #! (badjet && (out or out or outoftime))
+        #goodjet or not x
+        #x = (not out and not out and not outoftime)
+        #x happens when eta and phi are both small, and the out of time bit is not set.
+        #not x happens if it's out, or if it's out of time.
     
     @property
     def pass_fiducial_eta(self):
@@ -226,8 +251,8 @@ class EGamma(Particle, HasConditionals):
     def et(self):
         try:
             return self.cl.E / cosh(self.etas2)
-        except ZeroDivisionError:
-            return 0.
+        except (ZeroDivisionError, OverflowError):
+            return -99999
     
     @property
     def reta(self):
@@ -241,22 +266,22 @@ class EGamma(Particle, HasConditionals):
     def Rhad(self):
         try:
             return self.Ethad / (self.cl.E / cosh(self.etas2))
-        except ZeroDivisionError:
-            return 0.
+        except (ZeroDivisionError, OverflowError):
+            return -99999
         
     @property
     def Rhad1(self):
         try:
             return self.Ethad1 / (self.cl.E / cosh(self.etas2))
-        except ZeroDivisionError:
-            return 0.
+        except (ZeroDivisionError, OverflowError):
+            return -99999
     
     @property
     def Eratio(self):
         try:
             return (self.emaxs1 - self.Emax2) / (self.emaxs1 + self.Emax2)
-        except ZeroDivisionError:
-            return 0.
+        except (ZeroDivisionError, OverflowError):
+            return -99999
     
     @property
     def deltaE(self):
@@ -302,6 +327,10 @@ class EGamma(Particle, HasConditionals):
     Etcone20_pt_corrected = TI.float(naming(pau="shwr_EtCone20_corrected"))
     Etcone30_pt_corrected = TI.float(naming(pau="shwr_EtCone30_corrected"))
     Etcone40_pt_corrected = TI.float(naming(pau="shwr_EtCone40_corrected"))
+    
+    Etcone20_ED_corrected = TI.float
+    Etcone30_ED_corrected = TI.float
+    Etcone40_ED_corrected = TI.float
     
     class Cluster(Particle):
         """
@@ -372,6 +401,19 @@ class Photon(EGamma):
             self.wstot, self.ws3,
             self.isConv,        
         )
+    
+    def Etcone40_PtED_corrected(self, is_mc=False):
+        return GetPtEDCorrectedIsolation(
+            self.Etcone40, 
+            self.Etcone40_ED_corrected, 
+            self.cl.E, 
+            self.etas2, 
+            self.etap, 
+            self.cl.eta, 
+            40,
+            is_mc,
+            self.isConv,
+            CaloIsoCorrection.PHOTON)
     
     @rel15
     @property
@@ -510,6 +552,20 @@ class Electron(EGamma):
         pass
     truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
     
+    def EtCone20_ptNPV_corrected(self, npv_withtracks, is_mc=False):
+        return GetPtNPVCorrectedIsolation(
+            npv_withtracks,
+            self.cl.E,
+            self.etas2,
+            self.etap,
+            self.cl.eta,
+            20,
+            is_mc,
+            self.Etcone20,
+            False, # Conversion, ignored for electrons
+            # Default parttype is electron
+            )
+    
     @property
     def hit_dependent_pt(self):
         if self.nSCTHits + self.nPixHits >= 4:
@@ -527,6 +583,7 @@ class Electron(EGamma):
         "Require All Electrons have BLayer if Expected"
         """
         return self.has_blayer if self.expectHitInBLayer else True
+    
     @property
     def good_jet_quality(self):
         "Only used for 2010 PAU. No jet quality for electrons."
