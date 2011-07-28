@@ -116,7 +116,9 @@ class Dataset(ContentsWrapper, yaml.YAMLObject):
         return self.prodsysstatus
         
     @property
-    def good(self): 
+    def good(self):
+        if self.contents.get("good"):
+            return True
         return self.status == "EVENTS_AVAILABLE" and self.amistatus == "VALID"
     
     @property
@@ -149,7 +151,10 @@ def make_dataset(x):
     d = Dataset(x)
     if not d.good:
         return None
-    return d    
+    return d
+
+def dataset_from_name(dataset_name):
+    return Dataset(dict(logicaldatasetname=dataset_name))
 
 def query_datasets(pattern):
     pattern = pattern.replace("*", "%").rstrip("/")
