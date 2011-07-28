@@ -475,8 +475,7 @@ class Photon(EGamma):
         E, phi = cl.E, cl.phi
         etas2 = self.etas2
         cl_et = cl.E / cosh(etas2)
-        aEC = self._v16_energy_rescaler.applyEnergyCorrection
-        return aEC(etas2, phi, E, cl_et, n, self._part_type)
+        return v16_E_correction(etas2, phi, E, cl_et, n, self._part_type)
         
     def v16_corrections(self):
         E_corrected = self.v16_E_corrected()

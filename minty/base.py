@@ -77,8 +77,6 @@ class AnalysisBase(object):
         tree = self.input_tree
         from treedefs.base import EGamma, TruthPhoton
         TruthPhoton._event = EGamma._event = self.input_tree
-        EGamma._v16_energy_rescaler = EnergyRescaler()
-        EGamma._v16_energy_rescaler.useDefaultCalibConstants()
         
         global_instance = tree.Global_obj._instance
         global_instance._grl = self.grl
