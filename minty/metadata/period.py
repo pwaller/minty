@@ -3,22 +3,28 @@
 from os import listdir
 from os.path import join as pjoin
 from pkg_resources import resource_string, get_provider
-from yaml import dump, load
+from yaml import safe_dump, load
 
 import re
 import sys
 
 # run to period mapping
-RUN_TO_PERIOD = load(resource_string(__name__, "periods.yaml"))
+RUN_TO_PERIOD = None
+
+def load_period_mapping():
+    global RUN_TO_PERIOD
+    if not RUN_TO_PERIOD:
+        period_runs = load(resource_string(__name__, "periods.yaml"))
+        RUN_TO_PERIOD = {}
+        for period, runs in sorted(period_runs.iteritems()):
+            for run in runs:
+                RUN_TO_PERIOD[run] = period
+    return RUN_TO_PERIOD
 
 def period_from_run(run):
     if run < 152166:
-        return "MC", (run, run)
-    for period, (first, last) in RUN_TO_PERIOD.items():
-        if first <= run <= last:
-            return period, (first, last)
-    return "UNK", (run, run)
-    #assert False, "Outside known period: %i" % run
+        return "MC"    
+    return load_period_mapping().get(run, "UNK")
 
 def generate_mapping():
     from DQUtils.periods import fetch_project_period_runs
@@ -31,7 +37,7 @@ def generate_mapping():
                 continue
             if not period[-1].isdigit():
                 continue
-            mapping["{0}_{1}".format(project, period)] = min(runs), max(runs)
+            mapping["{0}_{1}".format(project, period)] = runs
             
     return mapping
 
@@ -40,7 +46,7 @@ def update_periods_file():
     
     path = get_provider(__name__).module_path
     with open(pjoin(path, "periods.yaml"), "wb") as fd:
-        fd.write(dump(mapping))
+        fd.write(safe_dump(mapping))
     print "Periods file updated with %i entries" % len(mapping)
 
 def check_mapping():

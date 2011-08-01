@@ -182,7 +182,7 @@ class AnalysisBase(object):
         event_cache.invalidate()
         self.current_run = event.RunNumber
         if self.current_run != self.previous_run:
-            self.period, (_, _) = period_from_run(self.current_run)
+            self.period = period_from_run(self.current_run)
             self.init_result_store(self.period, self.current_run)
             
         tree = self.root_tree
