@@ -495,6 +495,9 @@ class Photon(EGamma):
         cl_et = cl.E / cosh(etas2)
         return v16_E_correction(etas2, phi, E, cl_et, n, self._part_type)
 
+    def compute_corrected(self, vertex_z):
+        self.corrected = self.corrected_fourvec(vertex_z)
+
     @event_cache
     def corrected_fourvec(self, vertex_z):
         
