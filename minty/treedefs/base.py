@@ -413,6 +413,7 @@ class Photon(EGamma):
             self.cl.eta, 
             40,
             is_mc,
+            self.Etcone40,
             self.isConv,
             CaloIsoCorrection.PHOTON)
     
