@@ -14,6 +14,7 @@ setup(
             "minty-runperiod-mapping = minty.metadata.period:main",
             "minty-slim = minty.tools.tree.slimmer:main",
             "minty-parse-lumicalc = minty.metadata.lumicalc_parse:main",
+            "minty-tree = minty.tools.minty_tree:main",
         ]
     },
 )
