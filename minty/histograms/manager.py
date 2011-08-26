@@ -65,7 +65,6 @@ class HistogramManager(object):
         to_rewrite = []
         for fullname, (obj, name, subdir) in self.store.iteritems():
             if isinstance(obj, dict):
-                log.error("I am rewriting {0}".format(name))
                 to_rewrite.append(fullname)
                 
         for fullname in to_rewrite:
