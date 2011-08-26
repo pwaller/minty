@@ -505,7 +505,7 @@ class Photon(EGamma):
         eta_corrected = self.eta_corrected(vertex_z)
         
         E_corrected = self.E_corrected
-        pt_corrected = E_corrected / cosh(eta_corrected)
+        pt_corrected = E_corrected / cosh(self.etas2) #cosh(eta_corrected)
         
         v = Fourvec_PtEtaPhiE(pt_corrected, eta_corrected, self.phi, E_corrected)
         v.isConv = self.isConv
