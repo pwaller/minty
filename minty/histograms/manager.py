@@ -1,4 +1,6 @@
+from collections import defaultdict
 from cPickle import dumps
+
 
 from logging import getLogger; log = getLogger("minty.histograms.manager")
 
@@ -60,6 +62,15 @@ class HistogramManager(object):
         return self.store[key][0]
     
     def finalize(self):
+        to_rewrite = []
+        for fullname, (obj, name, subdir) in self.store.iteritems():
+            if isinstance(obj, dict):
+                log.error("I am rewriting {0}".format(name))
+                to_rewrite.append(fullname)
+                
+        for fullname in to_rewrite:
+            self.write_object(fullname, self[fullname])
+                
         self.save()
         self.file.Close()
 
@@ -80,13 +91,16 @@ class HistogramManager(object):
     def write_parameter(self, name, value):
         self[name] = R.TParameter(type(value))(name, value)
 
+    def expand_hname(self, hname):
+        name =  [element for element in expand_hname(*hname) if element != "*"]
+        return "/".join(name)
+
     def build_histogram(self, *hname, **kwargs):
         """
         Create a histogram.
         """
+        name = self.expand_hname(hname)
         
-        name =  [element for element in expand_hname(*hname) if element != "*"]
-        name = "/".join(name)
         title = kwargs.pop("t", name) # title defaults to name
         if not "b" in kwargs:
             raise RuntimeError("Please specify binning "
@@ -112,6 +126,15 @@ class HistogramManager(object):
         """
         if hname in self.filler_store:
             return self.filler_store[hname]
+        asdict = kwargs.pop("asdict", False)
+        if asdict:
+            name = self.expand_hname(hname)
+            d = defaultdict(int)
+            self[name] = self.hist_store[hname] = d 
+            def filler(x):
+                d[x] += 1
+            self.filler_store[hname] = filler
+            return filler
         return self.build_histogram(*hname, **kwargs)
 
 
