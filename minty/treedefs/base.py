@@ -349,7 +349,15 @@ class EGamma(Particle, HasConditionals):
         
         # matched in pau is called "ph_matchMC"
         matched = TI.bool(naming(pau=lambda x, y: x.replace("{leafname}_", "match")))
-                
+        
+        isBrem = TI.bool
+        isConv = TI.bool
+        isFromHardProc = TI.bool
+        isPhotonFromHardProc = TI.bool
+        mothertype = TI.int
+        type = TI.int
+        deltaRRecPhoton = TI.float
+        
         naming = staticmethod(naming(eg ="{rootname}_truth_{leafname}",
                                      pau="{rootname}_{leafname}_MC"))
                     
