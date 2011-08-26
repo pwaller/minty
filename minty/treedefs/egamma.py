@@ -96,7 +96,7 @@ def egamma_wrap_tree(t, options):
             
     tt.add(Global)
     
-    tt.add_list(Vertex,      "vertices",      300, **kwargs)
+    tt.add_list(Vertex,      "vertices",      600, **kwargs)
         
     Ph = ConditionalMeta.make_class(Photon, options.project, options.release)
     El = ConditionalMeta.make_class(Electron, options.project, options.release)
@@ -105,15 +105,15 @@ def egamma_wrap_tree(t, options):
         # SMWZ: Disable jet matching
         Ph.imatchRecJet = -1
             
-    tt.add_list(El,          "electrons",     500, **kwargs)
-    tt.add_list(Ph,          "photons",       500, **kwargs)
-    tt.add_list(Jet,         "jets",          500, **kwargs)
+    tt.add_list(El,          "electrons",     1000, **kwargs)
+    tt.add_list(Ph,          "photons",       1000, **kwargs)
+    tt.add_list(Jet,         "jets",          1000, **kwargs)
     
     if selarg.tuple_type == "pau":
         trigger_classes = setup_pau_trigger_info(t, tt, Trigger, **kwargs)
         TriggerL1, TriggerL2, TriggerEF = trigger_classes
         if selarg.have_truth:
-            tt.add_list(TruthPhoton, "true_photons",  500, **kwargs)
+            tt.add_list(TruthPhoton, "true_photons",  1000, **kwargs)
     else:
         TriggerL1 = TriggerL2 = TriggerEF = Trigger
         
