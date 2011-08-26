@@ -350,13 +350,8 @@ class EGamma(Particle, HasConditionals):
         # matched in pau is called "ph_matchMC"
         matched = TI.bool(naming(pau=lambda x, y: x.replace("{leafname}_", "match")))
         
-        isBrem = TI.bool
-        isConv = TI.bool
-        isFromHardProc = TI.bool
-        isPhotonFromHardProc = TI.bool
         mothertype = TI.int
         type = TI.int
-        deltaRRecPhoton = TI.float
         
         naming = staticmethod(naming(eg ="{rootname}_truth_{leafname}",
                                      pau="{rootname}_{leafname}_MC"))
@@ -366,7 +361,12 @@ class Photon(EGamma):
     particle = "photon"
     
     class Truth(EGamma.Truth):
+        isBrem = TI.bool
+        isConv = TI.bool
+        isFromHardProc = TI.bool
         isPhotonFromHardProc = TI.bool
+        deltaRRecPhoton = TI.float
+        
     truth = TI.instance(Truth, Truth.naming, VariableSelection.have_truth)
     
     class Conv(object):
