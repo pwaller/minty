@@ -47,6 +47,7 @@ def parse_options(argv):
     p = OptionParser(usage="usage: %prog [options] [input files]")
     p.add_option("-G", "--grl-path", type=str)
     p.add_option("--run-specific-output", action="store_true")
+    p.add_option("--period-specific-output", action="store_true")
     p.add_option("-E", "--shell-on-exception", action="store_true")
     p.add_option("-M", "--mc", action="store_true")
     p.add_option("-L", "--limit", type=int, default=1000000000)

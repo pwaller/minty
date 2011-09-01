@@ -109,7 +109,13 @@ class AnalysisBase(object):
             self.flush()
         
         result_name = self.options.output
-        if self.options.run_specific_output:
+        
+        if self.options.period_specific_output:
+            if ".root" in result_name:
+                result_name = result_name[:-len(".root")]
+            result_name = result_name + "-%s.root" % (period)
+            
+        elif self.options.run_specific_output:
             if ".root" in result_name:
                 result_name = result_name[:-len(".root")]
             result_name = result_name + "-P%s-R%i.root" % (period, run)
