@@ -53,7 +53,9 @@ class AnalysisBase(object):
         self.result_name = options.output
         self.histogram_manager = self.h = None
         
-        self.current_tree = self.current_run = self.previous_run = None
+        self.current_tree = None
+        self.current_run = self.previous_run = None
+        self.current_period = self.previous_period = None
         
         self.should_dump = False
         self.events_to_dump = []
@@ -101,16 +103,16 @@ class AnalysisBase(object):
         to disk.
         """
         log.info("Run, period changed: %s, %s", period, run)
-        if self.histogram_manager and not self.options.run_specific_output:
+        if self.histogram_manager and not (self.options.run_specific_output or self.options.period_specific_output):
             # Don't create a new file unless --run-specific-output specified
             return
             
-        if self.histogram_manager is not None:
-            self.flush()
-        
         result_name = self.options.output
         
         if self.options.period_specific_output:
+            if self.current_period == self.previous_period:
+                # Don't create a new file unless --period-specific-output specified.
+                return
             if ".root" in result_name:
                 result_name = result_name[:-len(".root")]
             result_name = result_name + "-%s.root" % (period)
@@ -119,6 +121,9 @@ class AnalysisBase(object):
             if ".root" in result_name:
                 result_name = result_name[:-len(".root")]
             result_name = result_name + "-P%s-R%i.root" % (period, run)
+            
+        if self.histogram_manager is not None:
+            self.flush()
             
         result_name = self.get_unused_filename(result_name)
         self.histogram_manager = self.h = HistogramManager(result_name)
@@ -188,8 +193,9 @@ class AnalysisBase(object):
         event_cache.invalidate()
         self.current_run = event.RunNumber
         if self.current_run != self.previous_run:
-            self.period = period_from_run(self.current_run)
-            self.init_result_store(self.period, self.current_run)
+            self.current_period = period_from_run(self.current_run)
+            self.init_result_store(self.current_period, self.current_run)
+            self.previous_period = self.current_period
             
         tree = self.root_tree
         if self.current_tree != tree:
