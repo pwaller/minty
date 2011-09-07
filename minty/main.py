@@ -21,7 +21,18 @@ def run(Analysis):
     options, input_tree = parse_options(argv)
         
     if options.shell_on_exception:
-        from IPython.Shell import IPShellEmbed; IPShellEmbed(["-pdb"])
+        try:
+            from IPython.Shell import IPShellEmbed
+        except ImportError:
+            #from IPython.frontend.terminal.embed import InteractiveShellEmbed as IPShellEmbed
+            from pudb import pm
+            import sys
+            def f(*args):
+                pm()
+            sys.excepthook = f
+        else:
+            IPShellEmbed(["-pdb"])
+        
         
     analysis = Analysis(input_tree, options)
     analysis.run()
