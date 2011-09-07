@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from logging import getLogger; log = getLogger("minty.base")
 
+from os import unlink, symlink
 from os.path import basename, exists
 from time import time
 
@@ -162,6 +163,11 @@ class AnalysisBase(object):
                      for leaf, descriptor in tree)
         
         hm.write_object("enabled_branches", leaves)
+        
+        if self.options.link_latest_output:
+            if exists("latest.root"):
+                unlink("latest.root")
+            symlink(hm.filename, "latest.root")
         
         hm.finalize()
         self.initialize_counters()
