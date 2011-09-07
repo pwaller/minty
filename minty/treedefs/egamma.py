@@ -79,7 +79,7 @@ def setup_pau_trigger_info(t, tt, Trigger, **kwargs):
     
     return TriggerL1, TriggerL2, TriggerEF
 
-def egamma_wrap_tree(t, options):
+def egamma_wrap_tree(t, options, create=False):
     
     leafset = set(l.GetName() for l in t.GetListOfLeaves())
     
@@ -89,7 +89,7 @@ def egamma_wrap_tree(t, options):
     
     tt = make_wrapper(t, selarg=selarg)
     
-    kwargs = dict(create=False, warnmissing=True)
+    kwargs = dict(create=create, warnmissing=True)
     
     if selarg.tuple_type == "pau":
         Global.larError = 0
