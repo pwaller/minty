@@ -1,13 +1,15 @@
 from collections import defaultdict
 from cPickle import dumps
 
+from inspect import currentframe
+from traceback import extract_stack
+
 
 from logging import getLogger; log = getLogger("minty.histograms.manager")
 
 import ROOT as R
 
 from .builders import build_histogram_auto
-
     
 def expand_hname(*hname):
     result = []
@@ -33,6 +35,7 @@ class HistogramManager(object):
         self.store = {}
         self.hist_store = {}
         self.filler_store = {}
+        self.histinfo = {}
         self.filename = filename
         
         # When histograms are created, don't put them 
@@ -62,6 +65,9 @@ class HistogramManager(object):
         return self.store[key][0]
     
     def finalize(self):
+    
+        self.store["histinfo"] = self.histinfo, "histinfo", ""
+    
         to_rewrite = []
         for fullname, (obj, name, subdir) in self.store.iteritems():
             if isinstance(obj, dict):
@@ -100,6 +106,11 @@ class HistogramManager(object):
         """
         name = self.expand_hname(hname)
         
+        caller_frame = kwargs.pop("caller_frame", None)
+        if caller_frame:
+            call_stack = tuple(extract_stack(caller_frame))
+            self.histinfo.setdefault(name, set()).add(call_stack)
+        
         title = kwargs.pop("t", name) # title defaults to name
         if not "b" in kwargs:
             raise RuntimeError("Please specify binning "
@@ -108,7 +119,7 @@ class HistogramManager(object):
         assert not kwargs, "Unrecognized arguments to build_histogram: %r" % kwargs
     
         hist, filler = build_histogram_auto(name, title, binning)
-                
+        
         self[name] = hist
         self.hist_store[hname] = hist
         self.filler_store[hname] = filler
@@ -134,7 +145,8 @@ class HistogramManager(object):
                 d[x] += 1
             self.filler_store[hname] = filler
             return filler
-        return self.build_histogram(*hname, **kwargs)
+        caller_frame = currentframe().f_back
+        return self.build_histogram(caller_frame=caller_frame, *hname, **kwargs)
 
 
 class AthenaHistogramManager(HistogramManager):
